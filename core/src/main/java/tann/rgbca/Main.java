@@ -10,21 +10,20 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import space.earlygrey.shapedrawer.ShapeDrawer;
+import tann.rgbca.screen.CAScreen;
 import tann.rgbca.screen.Screen;
 import tann.rgbca.screen.TestScreen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
 	private SpriteBatch batch;
-	private Texture image;
 	private Stage stage;
 	public static float t;
 	@Override
 	public void create() {
 		stage = new Stage();
 		batch = (SpriteBatch)stage.getBatch();
-		setScreen(new TestScreen());
-		image = new Texture("libgdx.png");
+		setScreen(new CAScreen());
 	}
 
 	private void setScreen(Screen screen) {
@@ -37,19 +36,10 @@ public class Main extends ApplicationAdapter {
 		Gdx.gl.glClearColor(0.15f, 0.15f, 0.2f, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		stage.draw();
-//		batch.begin();
-//		batch.draw(image, 140, 210);
-//		batch.end();
 	}
 
 	private void update(float deltaTime) {
 		t += deltaTime;
-	}
-
-	@Override
-	public void dispose() {
-		batch.dispose();
-		image.dispose();
 	}
 
 	public static Main self() {

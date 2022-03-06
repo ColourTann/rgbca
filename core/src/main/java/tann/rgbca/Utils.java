@@ -7,9 +7,15 @@ import com.badlogic.gdx.math.Vector2;
 
 public abstract class Utils {
     public static Vector2 makeMouseVec() {
+        return makeMouseVec(true);
+    }
+
+    public static Vector2 makeMouseVec(boolean flip) {
+        float y = (Gdx.graphics.getHeight()-Gdx.input.getY())/(float)Gdx.graphics.getHeight();
+        if(!flip) y = (Gdx.input.getY())/(float)Gdx.graphics.getHeight();
         return new Vector2(
             Gdx.input.getX()/(float)Gdx.graphics.getWidth(),
-            (Gdx.graphics.getHeight()-Gdx.input.getY())/(float)Gdx.graphics.getHeight()
+            y
         );
     }
 
