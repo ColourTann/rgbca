@@ -22,7 +22,7 @@ public class GoLScreen extends Screen {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         ShaderProgram.pedantic = false;
-        ShaderProgram sp = Utils.makeShader("ca");
+        ShaderProgram sp = Utils.makeShader("gol");
         if(!sp.isCompiled()) {
             System.out.println(sp.getLog());
             return;
