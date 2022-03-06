@@ -18,7 +18,7 @@ public class Main extends ApplicationAdapter {
 	private SpriteBatch batch;
 	private Texture image;
 	private Stage stage;
-
+	public static float t;
 	@Override
 	public void create() {
 		stage = new Stage();
@@ -33,12 +33,17 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void render() {
+		update(Gdx.graphics.getDeltaTime());
 		Gdx.gl.glClearColor(0.15f, 0.15f, 0.2f, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		stage.draw();
 //		batch.begin();
 //		batch.draw(image, 140, 210);
 //		batch.end();
+	}
+
+	private void update(float deltaTime) {
+		t += deltaTime;
 	}
 
 	@Override
