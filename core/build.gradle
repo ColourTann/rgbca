@@ -1,0 +1,9 @@
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+eclipse.project.name = appName + '-core'
+
+dependencies {
+	api "com.badlogicgames.gdx:gdx:$gdxVersion"
+	api "com.github.czyzby:noise4j:$noise4jVersion"
+	api "com.github.tommyettinger:make_some_noise:$makeSomeNoiseVersion"
+	api "space.earlygrey:shapedrawer:$shapeDrawerVersion"
+}
