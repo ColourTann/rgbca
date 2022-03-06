@@ -16,6 +16,17 @@ uniform vec2 u_screen;
 // a special uniform for textures 
 uniform sampler2D u_texture;
  
+bool isClick() {
+  vec2 locPos = gl_FragCoord/u_screen;
+  vec2 dist = locPos - u_mloc;
+  float totalDist = length(dist);
+  return totalDist<.01 && u_ml>0;
+}
+
+bool isClear() {
+  return u_mr > 0;
+}
+
 void main()
 {
   vec2 caLoc = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y));
@@ -51,17 +62,13 @@ void main()
     }
   }
 
-
   vec3 col = vec3(newVal, newVal, newVal);
-
-  vec2 locPos = gl_FragCoord/u_screen;
-  vec2 dist = locPos - u_mloc;
-  float totalDist = length(dist);
-  if(totalDist<.01 && u_ml>0) {
+  if(isClick()) {
     col.rgb = 1.;
   }
-  if(u_mr > 0) {
+  if(isClear()) {
     col = vec3(0.,0.,0.);
   }
   gl_FragColor = vec4(col, 1.);
 }
+

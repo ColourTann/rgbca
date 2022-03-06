@@ -9,12 +9,12 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import tann.rgbca.Main;
 import tann.rgbca.Utils;
 
-public class CAScreen extends Screen {
+public class GoLScreen extends Screen {
 
     FrameBuffer fb;
     Texture previous;
 
-    public CAScreen() {
+    public GoLScreen() {
         fb = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
         previous = fb.getColorBufferTexture();
     }
@@ -28,7 +28,7 @@ public class CAScreen extends Screen {
             return;
         }
 
-        batch.flush();fb.begin();batch.flush();
+        fb.begin();
 
         batch.setShader(sp);
         sp.setUniformf("u_t", Main.t);
@@ -38,11 +38,11 @@ public class CAScreen extends Screen {
         sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1)?1:0);
 
         batch.draw(previous, 0, 0, getWidth(), getHeight(), 0, 0, (int)getWidth(), (int)getHeight(), false, true);
+        batch.flush();
 
-        batch.flush();fb.end();batch.flush();
+        fb.end();
 
         Texture result = fb.getColorBufferTexture();
-//        batch.draw(result, 0, 0);
         batch.draw(result, 0, 0, getWidth(), getHeight(), 0, 0, (int)getWidth(), (int)getHeight(), false, true);
         previous = result;
         super.draw(batch, parentAlpha);

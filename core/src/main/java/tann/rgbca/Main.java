@@ -10,8 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import space.earlygrey.shapedrawer.ShapeDrawer;
-import tann.rgbca.screen.CAScreen;
-import tann.rgbca.screen.DrawingScreen;
+import tann.rgbca.screen.GoLScreen;
 import tann.rgbca.screen.Screen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
@@ -21,9 +20,13 @@ public class Main extends ApplicationAdapter {
 	public static float t;
 	@Override
 	public void create() {
+		setupStage();
+		setScreen(new GoLScreen());
+	}
+
+	private void setupStage() {
 		stage = new Stage();
 		batch = (SpriteBatch)stage.getBatch();
-		setScreen(new CAScreen());
 	}
 
 	private void setScreen(Screen screen) {
@@ -58,4 +61,12 @@ public class Main extends ApplicationAdapter {
 		}
 		return sd;
 	}
+
+	@Override
+	public void resize(int width, int height) {
+		setupStage();
+		setScreen(new GoLScreen());
+		super.resize(width, height);
+	}
+
 }
