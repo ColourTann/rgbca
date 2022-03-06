@@ -11,8 +11,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 import tann.rgbca.screen.CAScreen;
+import tann.rgbca.screen.DrawingScreen;
 import tann.rgbca.screen.Screen;
-import tann.rgbca.screen.TestScreen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {

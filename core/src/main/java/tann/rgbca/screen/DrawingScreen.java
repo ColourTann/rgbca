@@ -6,15 +6,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 import tann.rgbca.Main;
 import tann.rgbca.Utils;
 
-public class CAScreen extends Screen {
+public class DrawingScreen extends Screen {
 
     FrameBuffer fb;
     Texture previous;
 
-    public CAScreen() {
+    public DrawingScreen() {
         fb = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
         previous = fb.getColorBufferTexture();
     }
@@ -22,7 +23,7 @@ public class CAScreen extends Screen {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         ShaderProgram.pedantic = false;
-        ShaderProgram sp = Utils.makeShader("ca");
+        ShaderProgram sp = Utils.makeShader("drawing");
         if(!sp.isCompiled()) {
             System.out.println(sp.getLog());
             return;
