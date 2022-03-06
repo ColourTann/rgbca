@@ -17,6 +17,7 @@ import tann.rgbca.screen.Screen;
 public class Main extends ApplicationAdapter {
 	private SpriteBatch batch;
 	private Stage stage;
+	private Screen current;
 	public static float t;
 	@Override
 	public void create() {
@@ -30,6 +31,7 @@ public class Main extends ApplicationAdapter {
 	}
 
 	private void setScreen(Screen screen) {
+		current = screen;
 		stage.addActor(screen);
 	}
 
@@ -64,8 +66,11 @@ public class Main extends ApplicationAdapter {
 
 	@Override
 	public void resize(int width, int height) {
+
 		setupStage();
-		setScreen(new GoLScreen());
+		if(current != null) {
+			setScreen(current.copy());
+		}
 		super.resize(width, height);
 	}
 
