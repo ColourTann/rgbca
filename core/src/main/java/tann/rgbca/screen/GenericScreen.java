@@ -25,6 +25,7 @@ public class GenericScreen extends Screen {
     public void draw(Batch batch, float parentAlpha) {
         batch.end();
         Texture t = shaderCalculator.nextFrame();
+        t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         batch.begin();
         batch.draw(t, 0, 0, getWidth(), getHeight(), 0, 0, t.getWidth(), t.getHeight(), false, true);
         super.draw(batch, parentAlpha);
