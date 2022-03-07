@@ -17,6 +17,7 @@ public class ContScreen extends Screen {
     public ContScreen() {
         fb = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
         previous = fb.getColorBufferTexture();
+        setTransform(false);
     }
 
     @Override
@@ -28,7 +29,8 @@ public class ContScreen extends Screen {
             return;
         }
         Texture result = null;
-        for(int i=0;i<2;i++) {
+        batch.flush();
+        for(int i=0;i<1;i++) {
             fb.begin();
 
             batch.setShader(sp);
@@ -37,6 +39,7 @@ public class ContScreen extends Screen {
             sp.setUniformf("u_screen", Utils.makeScreenVec());
             sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
             sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
+            sp.setUniformf("u_mm", Gdx.input.isButtonPressed(2) ? 1 : 0);
 
             batch.draw(previous, 0, 0, getWidth(), getHeight(), 0, 0, (int) getWidth(), (int) getHeight(), false, true);
             batch.flush();
