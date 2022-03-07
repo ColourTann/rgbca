@@ -21,7 +21,7 @@ bool isClick() {
   vec2 locPos = gl_FragCoord/u_screen;
   vec2 dist = locPos - u_mloc;
   float totalDist = length(dist);
-  return totalDist<.0035 && u_ml>0;
+  return totalDist<.0135 && u_ml>0;
 }
 
 bool isClear() {
@@ -110,13 +110,18 @@ void main()
   vec2 relPos = gl_FragCoord/u_screen;
 
   int within = getNumWithin(me, .5f);
-  vec3 avg = getAverage(4);
-  vec3 hsv = rgb2hsv(avg).r;
-  float hue = hsv.r * within;
-  float dist = 0.0005;
-  vec2 angle = vec2(cos(hue*6.28), sin(hue*6.28)) * dist;
-  vec3 col = texture2D(u_texture, v_texCoords+angle).xyz;
-
+  vec3 avg = getAverage(5);
+  vec3 hsv = rgb2hsv(avg);
+  vec3 myhsv = rgb2hsv(me);
+  float hue = hsv.r;
+  float val = hsv.b;
+  float mySat = me.g;
+  float myHue = me.r;
+  float dist = 0.0005 + val*0.000;
+  float angle = hue*16.28 + val;
+  vec2 angleVector = vec2(cos(angle), sin(angle)) * dist;
+  vec3 col = texture2D(u_texture, v_texCoords+angleVector).xyz;
+  //col *= 1.002;
   if(isClick()) {
     col = randC(v_texCoords);
   }

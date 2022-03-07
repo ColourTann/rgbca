@@ -28,29 +28,25 @@ public class ColourStreamScreen extends Screen {
             System.out.println(sp.getLog());
             return;
         }
-        Texture result = null;
+
         batch.flush();
-        for(int i=0;i<1;i++) {
-            fb.begin();
+        fb.begin();
 
-            batch.setShader(sp);
-            sp.setUniformf("u_t", Main.t);
-            sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
-            sp.setUniformf("u_screen", Utils.makeScreenVec());
-            sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
-            sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
-            sp.setUniformf("u_mm", Gdx.input.isButtonPressed(2) ? 1 : 0);
+        batch.setShader(sp);
+        sp.setUniformf("u_t", Main.t);
+        sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
+        sp.setUniformf("u_screen", Utils.makeScreenVec());
+        sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
+        sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
+        sp.setUniformf("u_mm", Gdx.input.isButtonPressed(2) ? 1 : 0);
 
-            batch.draw(previous, 0, 0, getWidth(), getHeight(), 0, 0, (int) getWidth(), (int) getHeight(), false, true);
-            batch.flush();
+        batch.draw(previous, 0, 0, getWidth(), getHeight(), 0, 0, (int) getWidth(), (int) getHeight(), false, true);
+        batch.flush();
 
-            fb.end();
-            result = fb.getColorBufferTexture();
-//            previous.dispose();
-            previous = result;
-        }
-
+        fb.end();
+        Texture result = fb.getColorBufferTexture();
         batch.draw(result, 0, 0, getWidth(), getHeight(), 0, 0, (int)getWidth(), (int)getHeight(), false, true);
+        previous = result;
         super.draw(batch, parentAlpha);
     }
 }
