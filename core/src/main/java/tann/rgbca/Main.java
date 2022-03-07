@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import space.earlygrey.shapedrawer.ShapeDrawer;
+import tann.rgbca.screen.ColourStreamScreen;
 import tann.rgbca.screen.ContScreen;
 import tann.rgbca.screen.GoLScreen;
 import tann.rgbca.screen.Screen;
@@ -23,7 +24,7 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		setupStage();
-		setScreen(new ContScreen());
+		setScreen(new ColourStreamScreen());
 	}
 
 	private void setupStage() {
