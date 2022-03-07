@@ -13,14 +13,14 @@ public class GenericScreen extends Screen {
     public GenericScreen(String folderName, int scale) {
         this.folderName = folderName;
         this.scale = scale;
-        shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/scale);
+        shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/scale, Gdx.graphics.getHeight()/scale);
     }
 
     @Override
     public Screen copy() {
         return new GenericScreen(folderName, scale);
     }
-
+    
     @Override
     public void draw(Batch batch, float parentAlpha) {
         batch.end();

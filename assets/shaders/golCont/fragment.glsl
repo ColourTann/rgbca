@@ -107,18 +107,22 @@ vec3 randC(vec2 co) {
 void main() {
   vec3 me = texture2D(u_texture, v_texCoords).xyz;
   int total = getTotal(.5);
+  vec3 avg1 = getAverage(1);
+  vec3 avg2 = getAverage(3);
+  float avgL1 = length(avg1);
+  float avgL2 = length(avg2);
   bool living = length(me) > .5;
   bool newLiving = false;
   if(living) {
-    newLiving = total == 2 || total == 3;
+    newLiving = abs(avgL2-.4)<.05;
   } else {
-    newLiving = total == 3;
+    newLiving = abs(avgL1-.3)<.12;
   }
 
-  float incDelta = .15;
+  float incDelta = .2;
   float decDelta = .3;
-  float colValue = newLiving ? me.x+incDelta : me.x-decDelta;
-  vec3 col = vec3(colValue);
+  float newValue = newLiving ? me.x+incDelta : me.x-decDelta;
+  vec3 col = vec3(newValue);
   if(isClick()) {
     col = randC(v_texCoords);
   }

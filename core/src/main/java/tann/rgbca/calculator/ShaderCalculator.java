@@ -18,12 +18,17 @@ public class ShaderCalculator {
     Texture previous;
     SpriteBatch sb;
     final String folderName;
+
     public ShaderCalculator(String folderName, int size) {
+        this(folderName, size, size);
+    }
+
+    public ShaderCalculator(String folderName, int width, int height) {
         this.folderName = folderName;
-        fb = new FrameBuffer(Pixmap.Format.RGBA8888, size, size, false);
+        fb = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         previous = fb.getColorBufferTexture();
         sb = new SpriteBatch();
-        sb.getProjectionMatrix().setToOrtho2D(0,0,size,size);
+        sb.getProjectionMatrix().setToOrtho2D(0,0,width,height);
     }
 
     public Texture nextFrame() {
