@@ -3,8 +3,6 @@ package tann.rgbca.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Group;
 
-import java.lang.reflect.InvocationTargetException;
-
 public abstract class Screen extends Group {
 
     public Screen() {
