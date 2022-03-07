@@ -20,7 +20,11 @@ public abstract class Utils {
     }
 
     public static Vector2 makeScreenVec() {
-        return new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        return makeScreenVec(1);
+    }
+
+    public static Vector2 makeScreenVec(int scale) {
+        return new Vector2((float)Gdx.graphics.getWidth()/scale, (float)Gdx.graphics.getHeight()/scale);
     }
 
     public static ShaderProgram makeShader(String folderName) {
