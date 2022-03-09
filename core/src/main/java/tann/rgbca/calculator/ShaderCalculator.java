@@ -1,10 +1,8 @@
 package tann.rgbca.calculator;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -51,7 +49,7 @@ public class ShaderCalculator {
         sp.setUniformf("u_mm", Gdx.input.isButtonPressed(2) ? 1 : 0);
 
         sb.draw(previous, 0, 0, fb.getWidth(), fb.getHeight(), 0, 0,
-            (int) fb.getWidth(), (int) fb.getHeight(),
+            fb.getWidth(), fb.getHeight(),
             false, true);
         sb.end();
 
