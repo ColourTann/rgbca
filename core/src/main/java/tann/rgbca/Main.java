@@ -21,17 +21,19 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		setupStage();
-		setScreen(new GenericScreen("golDist", 4));
+		setScreen(new GenericScreen("colourStream2", 4));
 	}
 
 	private void setupStage() {
 		stage = new Stage();
 		batch = (SpriteBatch)stage.getBatch();
+		Gdx.input.setInputProcessor(stage);
 	}
 
 	private void setScreen(Screen screen) {
 		current = screen;
 		stage.addActor(screen);
+		stage.setKeyboardFocus(screen);
 	}
 
 	@Override
