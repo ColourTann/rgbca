@@ -20,12 +20,17 @@ public class GenericScreen extends Screen {
         this.scale = scale;
         shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/scale, Gdx.graphics.getHeight()/scale);
         addListener(new InputListener(){
-
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
                 switch (keycode) {
                     case Input.Keys.PLUS: case Input.Keys.EQUALS: frames++; break;
                     case Input.Keys.MINUS: frames--; break;
+                    case Input.Keys.V: {
+                        if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+                            shaderCalculator.pasteFolder();
+                        }
+                        break;
+                    }
                 }
                 return super.keyDown(event, keycode);
             }

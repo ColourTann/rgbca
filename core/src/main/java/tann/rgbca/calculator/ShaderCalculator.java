@@ -1,6 +1,7 @@
 package tann.rgbca.calculator;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -15,7 +16,7 @@ public class ShaderCalculator {
     FrameBuffer fb;
     Texture previous;
     SpriteBatch sb;
-    final String folderName;
+    String folderName;
     ShaderProgram sp;
     long lastModified;
 
@@ -30,6 +31,11 @@ public class ShaderCalculator {
         sb = new SpriteBatch();
         sb.getProjectionMatrix().setToOrtho2D(0,0,width,height);
         ShaderProgram.pedantic = false;
+        compileShader();
+    }
+
+    public void pasteFolder() {
+        folderName = Gdx.app.getClipboard().getContents();
         compileShader();
     }
 

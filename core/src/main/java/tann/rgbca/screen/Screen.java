@@ -15,6 +15,6 @@ public abstract class Screen extends Group {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new DrawingScreen();
+        return new TestScreen();
     }
 }
