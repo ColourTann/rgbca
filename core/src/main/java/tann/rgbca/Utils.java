@@ -38,4 +38,8 @@ public abstract class Utils {
     private static FileHandle getVertexShader(String folderName) {
         return Gdx.files.absolute("X:/code/workspace/rgbca/assets/shaders/"+folderName+"/vertex.glsl");
     }
+
+    public static long lastModified(String folderName) {
+        return getFragmentShader(folderName).lastModified();
+    }
 }

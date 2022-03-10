@@ -16,6 +16,8 @@ public class ShaderCalculator {
     Texture previous;
     SpriteBatch sb;
     final String folderName;
+    ShaderProgram sp;
+    long lastModified;
 
     public ShaderCalculator(String folderName, int size) {
         this(folderName, size, size);
@@ -27,11 +29,20 @@ public class ShaderCalculator {
         previous = fb.getColorBufferTexture();
         sb = new SpriteBatch();
         sb.getProjectionMatrix().setToOrtho2D(0,0,width,height);
+        ShaderProgram.pedantic = false;
+        compileShader();
+    }
+
+    private void compileShader() {
+        if(sp != null) sp.dispose();
+        sp = Utils.makeShader(folderName);
+        lastModified = Utils.lastModified(folderName);
     }
 
     public Texture nextFrame() {
-        ShaderProgram.pedantic = false;
-        ShaderProgram sp = Utils.makeShader(folderName);
+        if(Utils.lastModified(folderName) != lastModified) {
+            compileShader();
+        }
         if(!sp.isCompiled()) {
             System.out.println(sp.getLog());
             return previous;
