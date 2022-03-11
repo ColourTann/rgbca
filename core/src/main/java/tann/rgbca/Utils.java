@@ -28,7 +28,12 @@ public abstract class Utils {
     }
 
     public static ShaderProgram makeShader(String folderName) {
-        return new ShaderProgram(getVertexShader(folderName).readString(), getFragmentShader(folderName).readString());
+        FileHandle vertex = getVertexShader(folderName);
+        FileHandle fragment = getFragmentShader(folderName);
+        if(!vertex.exists() || !fragment.exists()) {
+            return null;
+        }
+        return new ShaderProgram(vertex.readString(), fragment.readString());
     }
 
     private static FileHandle getFragmentShader(String folderName) {

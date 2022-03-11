@@ -96,7 +96,7 @@ void main()
 
   float avgLn = length(avg);
   if(true || length(me) < 0.6 && length(me) > 0.4) {
-    newVal.r = avg.r*1.03;
+    newVal.r = avg.r;
     newVal.g = avg.g;
     newVal.b = avg.b;
   } else {

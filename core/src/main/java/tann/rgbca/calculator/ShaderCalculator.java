@@ -1,7 +1,7 @@
 package tann.rgbca.calculator;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -41,8 +41,22 @@ public class ShaderCalculator {
 
     private void compileShader() {
         if(sp != null) sp.dispose();
-        sp = Utils.makeShader(folderName);
-        lastModified = Utils.lastModified(folderName);
+        ShaderProgram tmp = Utils.makeShader(folderName);
+        if(tmp != null) {
+            sp = tmp;
+            lastModified = Utils.lastModified(folderName);
+        }
+    }
+
+    boolean flip;
+    public Texture pasteTexture() {
+        FileHandle fh = Gdx.files.internal("images/"+Gdx.app.getClipboard().getContents()+".png");
+        if(fh.exists()) {
+            previous = new Texture(fh);
+            flip = false;
+            return previous;
+        }
+        return null;
     }
 
     public Texture nextFrame() {
@@ -67,12 +81,13 @@ public class ShaderCalculator {
 
         sb.draw(previous, 0, 0, fb.getWidth(), fb.getHeight(), 0, 0,
             fb.getWidth(), fb.getHeight(),
-            false, true);
+            false, flip);
         sb.end();
 
         fb.end();
         Texture result = fb.getColorBufferTexture();
         previous = result;
+        flip = true;
         return result;
     }
 }

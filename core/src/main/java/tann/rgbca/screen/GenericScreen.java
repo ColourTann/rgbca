@@ -11,26 +11,40 @@ import tann.rgbca.calculator.ShaderCalculator;
 public class GenericScreen extends Screen {
 
     ShaderCalculator shaderCalculator;
-    final String folderName;
-    final int scale;
+    String folderName;
+    int scale;
     int frames = 1;
-    public GenericScreen(String folderName, int scale) {
+    public GenericScreen(String folderName, int inScale) {
         super();
         this.folderName = folderName;
-        this.scale = scale;
-        shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/scale, Gdx.graphics.getHeight()/scale);
+        this.scale = inScale;
+        shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/inScale, Gdx.graphics.getHeight()/inScale);
         addListener(new InputListener(){
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
+                boolean shift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
                 switch (keycode) {
-                    case Input.Keys.PLUS: case Input.Keys.EQUALS: frames++; break;
-                    case Input.Keys.MINUS: frames--; break;
-                    case Input.Keys.V: {
-                        if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-                            shaderCalculator.pasteFolder();
+                    case Input.Keys.PLUS: case Input.Keys.EQUALS: {
+                        if(shift) {
+                            GenericScreen.this.scale++;
+                        } else {
+                            frames++;
                         }
-                        break;
-                    }
+                    } break;
+                    case Input.Keys.MINUS: {
+                        if(shift) {
+                            scale = Math.max(1, scale-1);
+                        } else {
+                            frames = Math.max(1, frames-1);
+                        }
+                    } break;
+                    case Input.Keys.S:
+                        shaderCalculator.pasteFolder();
+                        GenericScreen.this.folderName = Gdx.app.getClipboard().getContents();
+                    break;
+                    case Input.Keys.T: {
+                        shaderCalculator.pasteTexture();
+                    } break;
                 }
                 return super.keyDown(event, keycode);
             }
