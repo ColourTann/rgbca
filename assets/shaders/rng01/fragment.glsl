@@ -29,7 +29,7 @@ bool isClick() {
   vec2 locPos = gl_FragCoord/u_screen;
   vec2 dist = locPos - u_mloc;
   float totalDist = length(dist);
-  return totalDist<.0435 && u_ml>0;
+  return totalDist<.0135 && u_ml>0;
 }
 
 bool isClear() {
@@ -151,7 +151,7 @@ int rng(int bound) {
   return seed%bound;
 }
 
-const int NUM_SUMS = 10;
+const int NUM_SUMS = 12;
 float sum(float a, float b) {
   int sumIndex = rng(NUM_SUMS);
   switch(sumIndex) {
@@ -165,7 +165,9 @@ float sum(float a, float b) {
     case 7: return abs(a-b)<.6 ? 1. : 0.;
     case 8: return abs(a-.3)<.1 ? 1. : 0.;
     case 9: return abs(a-.7)<.1 ? 1. : 0.;
-    default: a+b;
+    case 10: return max(a,b);
+    case 11: return min(a,b);
+    default: return 0;
   }
 }
 
@@ -208,7 +210,7 @@ float getVal(float[VAL_LN] possibles) {
 }
 
 void main() {
-  float across = 8., down = 5.;
+  float across = 1., down = 1.;
   seed = u_seed + 
     int(v_texCoords.x*across)*238 
   + int(v_texCoords.y*down)*92183;
@@ -219,11 +221,11 @@ void main() {
 
   vec3 result = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
 
-  vec3 col = mix(me, result, .18);
+  vec3 col = mix(me, result, .49);
 
   if(isClick()) {
-    col = randC(v_texCoords);
-    //col = vec3(.5,.5,.5);
+    // col = randC(v_texCoords);
+    col = vec3(.5,.5,.5);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);

@@ -43,7 +43,16 @@ public class GenericScreen extends Screen {
                         GenericScreen.this.folderName = Gdx.app.getClipboard().getContents();
                         break;
                     case Input.Keys.R:
-                        shaderCalculator.reseed();
+                        if(shift) {
+                            try {
+                                int i = Integer.parseInt(Gdx.app.getClipboard().getContents());
+                                shaderCalculator.reseed(i);
+                            } catch (Exception e) {
+                                System.out.printf(e.getMessage());
+                            }
+                        } else {
+                            shaderCalculator.reseed();
+                        }
                         break;
                     case Input.Keys.T: {
                         shaderCalculator.pasteTexture();

@@ -37,7 +37,11 @@ public class ShaderCalculator {
     }
 
     public void reseed() {
-        seed = (int) (Math.random()*9999999);
+        reseed((int) (Math.random()*9999999));
+    }
+
+    public void reseed(int num) {
+        this.seed = num;
         System.out.println("seed: " +seed);
     }
 
