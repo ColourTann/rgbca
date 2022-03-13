@@ -36,7 +36,7 @@ bool isClear() {
   return u_mr > 0;
 }
 
-int getTotal(float threshold) {
+int getNumAboveThreshold(float threshold) {
   int total = 0;
   vec2 onePixel = onePixel();
   for(int y=-1;y<=1;y++) {
@@ -68,6 +68,21 @@ vec3 getAverage(int dist) {
   return total/8.;
 }
 
+vec3 getAverageExactDist(int dist) {
+  vec3 total = vec3(0.,0.,0.);
+  vec2 onePixel = onePixel();
+  for(float y=-dist;y<=dist;y++) {
+    for(float x=-dist;x<=dist;x++) {
+      if(abs(x)+abs(y) != dist) {
+        continue;
+      }
+      vec3 val = getRelative(vec2(x,y));
+      total += val;
+    }
+  }
+  return total/8.;
+}
+
 vec3 getMax(int dist) {
   vec3 maxes = vec3(0.,0.,0.);
   vec2 onePixel = onePixel();
@@ -81,27 +96,6 @@ vec3 getMax(int dist) {
     }
   }
   return maxes;
-}
-
-int countExclusiveOrthog(int dist) {
-  int total = 0;
-  vec2 onePixel = onePixel();
-  int cnt;
-  for(float y=-dist;y<=dist;y++) {
-    for(float x=-dist;x<=dist;x++) {
-      if(abs(x)+abs(y) != dist) {
-        continue;
-      }
-      vec3 val = texture2D(u_texture, 
-        mod(v_texCoords+onePixel*vec2(x,y), vec2(1.,1.))
-        );
-      if(length(val)>0) {
-        total++;
-      }
-      cnt++;
-    }
-  }
-  return total;
 }
 
 int getNumWithin(vec3 me, float epsilon) {
@@ -144,26 +138,46 @@ vec3 randC(vec2 co) {
   return vec3(rand(co), rand(co+1.), rand(co+2.));
 }
 
-int LFSR_Rand_Gen(in int n)
+int magpie_gen(in int n)
 {
-  return n*3;
+  return n*89;
   // n = (n << 13) ^ n; 
   // return (n * (n*n*15731+789221) + 1376312589) & 0x7fffffff;
 }
 
 int seed;
 int rng(int bound) {
-  seed = LFSR_Rand_Gen(seed);
+  seed = magpie_gen(seed);
   return seed%bound;
 }
 
-float[10] getPossibleValues() {
+const int NUM_SUMS = 10;
+float sum(float a, float b) {
+  int sumIndex = rng(NUM_SUMS);
+  switch(sumIndex) {
+    case 0: return a+b;
+    case 1: return sin(a*6.28);
+    case 2: return pow(a, b);
+    case 3: return a-b;
+    case 4: return a*b;
+    case 5: return a>b?1.:0.;
+    case 6: return abs(a-b)<.3 ? 1. : 0.;
+    case 7: return abs(a-b)<.6 ? 1. : 0.;
+    case 8: return abs(a-.3)<.1 ? 1. : 0.;
+    case 9: return abs(a-.7)<.1 ? 1. : 0.;
+    default: a+b;
+  }
+}
+
+const int VAL_LN = 15;
+
+float[VAL_LN] getPossibleValues() {
 
   vec3 me = texture2D(u_texture, v_texCoords).xyz;
   vec3 avg1 = getAverage(1);
   vec3 max1 = getMax(1);
 
-  float[10] result;
+  float[VAL_LN] result;
 
   result[0] = me.x;
   result[1] = me.y;
@@ -179,36 +193,33 @@ float[10] getPossibleValues() {
 
   result[9] = length(me);
 
+  result[10] = getNumWithin(me, 1)/8.;
+  result[11] = getNumAboveThreshold(.2)/8.;
+
+  result[12] = getAverageExactDist(2);
+  result[13] = getAverageExactDist(3);
+  result[14] = getAverageExactDist(4);
+
   return result;
 }
 
-float sum(float a, float b) {
-  int sumIndex = rng(5);
-
-  switch(sumIndex) {
-    case 0: return a+b;
-    case 1: return sin(a*6.28);
-    case 2: return pow(a, b);
-    case 3: return a-b;
-    case 4: return a*b;
-
-    default: a+b;
-  }
-}
-
-float getVal(float[10] possibles) {
-  return mod(abs(sum(possibles[rng(10)], possibles[rng(10)])),1.);
+float getVal(float[VAL_LN] possibles) {
+  return mod(abs(sum(possibles[rng(VAL_LN)], possibles[rng(VAL_LN)])),1.00001);
 }
 
 void main() {
-  seed = u_seed;
+  float across = 8., down = 5.;
+  seed = u_seed + 
+    int(v_texCoords.x*across)*238 
+  + int(v_texCoords.y*down)*92183;
+
   vec3 me = texture2D(u_texture, v_texCoords).xyz;
 
-  float[10] pVals = getPossibleValues();
+  float[VAL_LN] pVals = getPossibleValues();
 
   vec3 result = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
 
-  vec3 col = mix(me, result, .12);
+  vec3 col = mix(me, result, .18);
 
   if(isClick()) {
     col = randC(v_texCoords);
