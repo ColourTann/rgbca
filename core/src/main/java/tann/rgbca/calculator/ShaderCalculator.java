@@ -19,6 +19,7 @@ public class ShaderCalculator {
     String folderName;
     ShaderProgram sp;
     long lastModified;
+    int seed;
 
     public ShaderCalculator(String folderName, int size) {
         this(folderName, size, size);
@@ -31,7 +32,13 @@ public class ShaderCalculator {
         sb = new SpriteBatch();
         sb.getProjectionMatrix().setToOrtho2D(0,0,width,height);
         ShaderProgram.pedantic = false;
+        reseed();
         compileShader();
+    }
+
+    public void reseed() {
+        seed = (int) (Math.random()*9999999);
+        System.out.println("seed: " +seed);
     }
 
     public void pasteFolder() {
@@ -73,6 +80,7 @@ public class ShaderCalculator {
 
         sb.setShader(sp);
         sp.setUniformf("u_t", Main.t);
+        sp.setUniformi("u_seed", seed);
         sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
         sp.setUniformf("u_screen", new Vector2(fb.getWidth(), fb.getHeight()));
         sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
