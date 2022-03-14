@@ -85,14 +85,7 @@ public class ShaderCalculator {
         fb.begin();
 
         sb.setShader(sp);
-        sp.setUniformf("u_t", Main.t);
-        sp.setUniformf("u_mult", mult);
-        sp.setUniformi("u_seed", seed);
-        sp.setUniformi("u_randomise", randomise?1:0);
-        sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
-        sp.setUniformf("u_screen", new Vector2(fb.getWidth(), fb.getHeight()));
-        sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
-        sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
+        setUniforms(sp);
 
         sb.draw(previous, 0, 0, fb.getWidth(), fb.getHeight(), 0, 0,
             fb.getWidth(), fb.getHeight(),
@@ -105,6 +98,17 @@ public class ShaderCalculator {
         flip = true;
         randomise = false;
         return result;
+    }
+
+    private void setUniforms(ShaderProgram sp) {
+        sp.setUniformf("u_t", Main.t);
+        sp.setUniformf("u_mult", mult);
+        sp.setUniformi("u_seed", seed);
+        sp.setUniformi("u_randomise", randomise?1:0);
+        sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
+        sp.setUniformf("u_screen", new Vector2(fb.getWidth(), fb.getHeight()));
+        sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
+        sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
     }
 
     public void setMultiplier(float mult) {
