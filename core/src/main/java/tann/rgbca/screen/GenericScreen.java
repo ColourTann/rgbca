@@ -4,8 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import tann.rgbca.Main;
 import tann.rgbca.calculator.ShaderCalculator;
 
 public class GenericScreen extends Screen {
@@ -15,25 +17,40 @@ public class GenericScreen extends Screen {
     int scale;
     int frames = 1;
     public GenericScreen(String folderName, int inScale) {
+        this(folderName, inScale, null);
+    }
+    public GenericScreen(String folderName, int inScale, Integer seed) {
         super();
         this.folderName = folderName;
         this.scale = inScale;
         shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/inScale, Gdx.graphics.getHeight()/inScale);
+        if(seed != null) {
+            shaderCalculator.reseed(seed);
+        }
         addListener(new InputListener(){
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                if(button == 2) {
+                    shaderCalculator.randomiseState();
+                }
+                return super.touchDown(event, x, y, pointer, button);
+            }
+
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
                 boolean shift = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT);
                 switch (keycode) {
                     case Input.Keys.PLUS: case Input.Keys.EQUALS: {
                         if(shift) {
-                            GenericScreen.this.scale++;
+                            setPixelScale(scale+1);
                         } else {
                             frames++;
                         }
                     } break;
                     case Input.Keys.MINUS: {
                         if(shift) {
-                            scale = Math.max(1, scale-1);
+                            setPixelScale(Math.max(1, scale-1));
                         } else {
                             frames = Math.max(1, frames-1);
                         }
@@ -48,7 +65,7 @@ public class GenericScreen extends Screen {
                                 int i = Integer.parseInt(Gdx.app.getClipboard().getContents());
                                 shaderCalculator.reseed(i);
                             } catch (Exception e) {
-                                System.out.printf(e.getMessage());
+                                System.out.println(e.getMessage());
                             }
                         } else {
                             shaderCalculator.reseed();
@@ -63,11 +80,26 @@ public class GenericScreen extends Screen {
         });
     }
 
+    private void setPixelScale(int i) {
+        this.scale = i;
+        Main.self().setScreen(copy());
+    }
+
     @Override
     public Screen copy() {
-        return new GenericScreen(folderName, scale);
+        return new GenericScreen(folderName, scale, shaderCalculator.getSeed());
     }
-    
+
+    @Override
+    public void act(float delta) {
+        if(Gdx.input.isButtonPressed(3)) {
+            float ratio = Gdx.input.getX()/getWidth();
+            float mult = Interpolation.linear.apply(0, 1, ratio);
+            shaderCalculator.setMultiplier(mult);
+        }
+        super.act(delta);
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if(frames <= 0) return;

@@ -30,7 +30,7 @@ public class Main extends ApplicationAdapter {
 		Gdx.input.setInputProcessor(stage);
 	}
 
-	private void setScreen(Screen screen) {
+	public void setScreen(Screen screen) {
 		current = screen;
 		stage.addActor(screen);
 		stage.setKeyboardFocus(screen);
@@ -46,6 +46,7 @@ public class Main extends ApplicationAdapter {
 
 	private void update(float deltaTime) {
 		t += deltaTime;
+		stage.act(deltaTime);
 	}
 
 	public static Main self() {

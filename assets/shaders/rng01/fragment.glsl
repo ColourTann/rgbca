@@ -8,9 +8,10 @@ varying vec2 v_texCoords;
 
 uniform float u_t;
 uniform int u_seed;
+uniform int u_randomise;
 uniform float u_ml;
+uniform float u_mult;
 uniform float u_mr;
-uniform float u_mm;
 uniform vec2 u_mloc;
 uniform vec2 u_screen;
  
@@ -29,7 +30,7 @@ bool isClick() {
   vec2 locPos = gl_FragCoord/u_screen;
   vec2 dist = locPos - u_mloc;
   float totalDist = length(dist);
-  return totalDist<.0135 && u_ml>0;
+  return totalDist<.002 && u_ml>0;
 }
 
 bool isClear() {
@@ -140,14 +141,14 @@ vec3 randC(vec2 co) {
 
 int magpie_gen(in int n)
 {
-  return n*89;
+  return n*997;
   // n = (n << 13) ^ n; 
   // return (n * (n*n*15731+789221) + 1376312589) & 0x7fffffff;
 }
 
 int seed;
 int rng(int bound) {
-  seed = magpie_gen(seed);
+  seed = magpie_gen(seed)+u_seed;
   return seed%bound;
 }
 
@@ -171,19 +172,22 @@ float sum(float a, float b) {
   }
 }
 
-const int VAL_LN = 15;
+const int VAL_LN = 16;
 
 float[VAL_LN] getPossibleValues() {
 
   vec3 me = texture2D(u_texture, v_texCoords).xyz;
   vec3 avg1 = getAverage(1);
+  vec3 avg2 = getAverage(2);
   vec3 max1 = getMax(1);
+  vec3 avgEx2 = getAverageExactDist(2);
+  vec3 avgEx3 = getAverageExactDist(3);
 
   float[VAL_LN] result;
 
-  result[0] = me.x;
-  result[1] = me.y;
-  result[2] = me.z;
+  result[0] = avg2.x;
+  result[1] = avg2.y;
+  result[2] = avg2.z;
 
   result[3] = avg1.x;
   result[4] = avg1.y;
@@ -198,9 +202,13 @@ float[VAL_LN] getPossibleValues() {
   result[10] = getNumWithin(me, 1)/8.;
   result[11] = getNumAboveThreshold(.2)/8.;
 
-  result[12] = getAverageExactDist(2);
-  result[13] = getAverageExactDist(3);
-  result[14] = getAverageExactDist(4);
+  result[12] = avgEx2.x;
+  result[13] = avgEx2.y;
+  result[14] = avgEx2.z;
+
+  result[13] = avgEx3.x;
+  result[14] = length(avgEx2);
+  result[15] = length(avgEx3);
 
   return result;
 }
@@ -210,7 +218,7 @@ float getVal(float[VAL_LN] possibles) {
 }
 
 void main() {
-  float across = 1., down = 1.;
+  float across = 5., down = 3.;
   seed = u_seed + 
     int(v_texCoords.x*across)*238 
   + int(v_texCoords.y*down)*92183;
@@ -221,16 +229,16 @@ void main() {
 
   vec3 result = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
 
-  vec3 col = mix(me, result, .49);
+  vec3 col = mix(me, result, u_mult);
 
   if(isClick()) {
-    // col = randC(v_texCoords);
-    col = vec3(.5,.5,.5);
+    col = randC(v_texCoords);
+    // col = vec3(.5,.5,.5);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);
   }
-  if(u_mm) {
+  if(u_randomise>0) {
     vec2 relPos = gl_FragCoord/u_screen;
     if(isWithin(relPos.y, 0.5, 0.91)) {
       col = randC(v_texCoords);
