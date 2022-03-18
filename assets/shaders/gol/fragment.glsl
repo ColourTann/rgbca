@@ -64,7 +64,7 @@ void main()
 
   vec3 col = vec3(newVal, newVal, newVal);
   if(isClick()) {
-    col.rgb = 1.;
+    col.rgb = vec3(0.,0.,0.);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);

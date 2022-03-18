@@ -2,9 +2,7 @@ package tann.rgbca.calculator;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.CpuSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -24,6 +22,7 @@ public class ShaderCalculator {
     long lastModified;
     int seed;
     float mult = .2f;
+    private Mesh mesh;
 
     public ShaderCalculator(String folderName, int size) {
         this(folderName, size, size);
@@ -38,6 +37,21 @@ public class ShaderCalculator {
         ShaderProgram.pedantic = false;
         reseed();
         compileShader();
+        mesh = createFullScreenQuad();
+    }
+
+    private Mesh createFullScreenQuad() {
+        Mesh mesh = new Mesh( true, 4, 0,  // static mesh with 4 vertices and no indices
+            new VertexAttribute( VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE ),
+            new VertexAttribute( VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE+"0" ) );
+        float[] verts = new float[]{
+            -1, -1, 0, 0, 0,
+            1, -1, 0, 1, 0,
+            1, 1, 0, 1, 1,
+            -1, 1, 0, 0, 1
+        };
+        mesh.setVertices( verts );
+        return mesh;
     }
 
     public void reseed() {
@@ -84,21 +98,21 @@ public class ShaderCalculator {
             return previous;
         }
 
-        batch.begin();
         buffer.begin();
-//        Gdx.gl.glClearColor(0, 0, 0, 1f);
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.setShader(sp);
+        sp.bind();
         setUniforms(sp);
+        previous.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        previous.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        previous.bind(0);
+//        sp.setUniformi("u_texture", 0);
+        mesh.render(sp,  GL20.GL_TRIANGLE_FAN);
 
-        batch.draw(previous,
-            0, 0,
-            buffer.getWidth(), buffer.getHeight(),
-            0, 0,
-            buffer.getWidth(), buffer.getHeight(),
-            false, flip);
-
-        batch.end();
+//        batch.draw(previous,
+//            0, 0,
+//            buffer.getWidth(), buffer.getHeight(),
+//            0, 0,
+//            buffer.getWidth(), buffer.getHeight(),
+//            false, flip);
 
         buffer.end();
         Texture result = buffer.getColorBufferTexture();
@@ -114,7 +128,7 @@ public class ShaderCalculator {
         sp.setUniformi("u_seed", seed);
         sp.setUniformi("u_randomise", randomise?1:0);
         sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
-        sp.setUniformf("u_screen", new Vector2(buffer.getWidth(), buffer.getHeight()));
+        sp.setUniformi("u_screen", buffer.getWidth(), buffer.getHeight());
         sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
         sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
     }

@@ -21,7 +21,7 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		setupStage();
-		setScreen(new GenericScreen("golLater", 4));
+		setScreen(new GenericScreen("meshGol", 4));
 	}
 
 	private void setupStage() {
