@@ -27,6 +27,7 @@ vec3 getRelative(ivec2 delta) {
     // return texture2D(u_texture, v_texCoords+onePixel*delta);
   
   ivec2 tmp = ivec2(gl_FragCoord.xy)+delta;
+  tmp = (tmp+u_screen) % u_screen;
   return texelFetch(u_texture, tmp, 0).xyz;
 }
 
@@ -159,8 +160,8 @@ void main() {
 
   float across = 1., down = 1.;
   seed = u_seed + 
-    int(gl_FragCoord.x/u_screen.x*across+17.)*238 
-  + int(gl_FragCoord.y/u_screen.y*down+18)*92183;
+    int(gl_FragCoord.x/u_screen.x*across+3)*238 
+  + int(gl_FragCoord.y/u_screen.y*down+1)*92183;
 
   vec3 me = getRelative(ivec2(0,0));
 
@@ -168,11 +169,13 @@ void main() {
 
   vec3 result = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
 
+  //result = normalize(result);
+
   vec3 col = mix(me, result, u_mult);
 
   if(isClick()) {
-    col = randC(gl_FragCoord.xy);
-    // col = vec3(.5,.5,.5);
+    // col = randC(gl_FragCoord.xy);
+    col = vec3(.5,.5,.5);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);
