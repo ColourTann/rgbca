@@ -12,7 +12,8 @@ import tann.rgbca.Utils;
 
 public class ShaderCalculator {
 
-    FrameBuffer buffer;
+    FrameBuffer buffer1;
+    FrameBuffer buffer2;
     Texture previous;
     Batch batch;
     String folderName;
@@ -28,8 +29,9 @@ public class ShaderCalculator {
 
     public ShaderCalculator(String folderName, int width, int height) {
         this.folderName = folderName;
-        buffer = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
-        previous = buffer.getColorBufferTexture();
+        buffer1 = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        buffer2 = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        previous = buffer1.getColorBufferTexture();
         batch = new SpriteBatch();
         batch.getProjectionMatrix().setToOrtho2D(0,0,width,height);
         ShaderProgram.pedantic = false;
@@ -150,15 +152,22 @@ public class ShaderCalculator {
         previous.bind();
         sp.setUniformi("u_texture", 0);
 
-        buffer.begin();
+        buffer1.begin();
         mesh.render(sp, GL20.GL_TRIANGLE_FAN);
-        buffer.end();
-        Texture result = buffer.getColorBufferTexture();
+        buffer1.end();
+        Texture result = buffer1.getColorBufferTexture();
         previous = result;
+        swapBuffers();
 //        previous.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 //        previous.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         randomise = false;
         return result;
+    }
+
+    private void swapBuffers() {
+        FrameBuffer tmp = buffer1;
+        buffer1 = buffer2;
+        buffer2 = tmp;
     }
 
     private void setUniforms(ShaderProgram sp) {
@@ -167,7 +176,7 @@ public class ShaderCalculator {
         sp.setUniformi("u_seed", seed);
         sp.setUniformi("u_randomise", randomise?1:0);
         sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
-        sp.setUniformi("u_screen", buffer.getWidth(), buffer.getHeight());
+        sp.setUniformi("u_screen", buffer1.getWidth(), buffer1.getHeight());
         sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
         sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
     }

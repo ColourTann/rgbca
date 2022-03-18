@@ -172,6 +172,8 @@ void main() {
   vec3 col = mix(me, result, u_mult);
 
   // col = me;
+
+  // col = me;
   // col = me;
   if(isClick()) {
     col = randC(v_texCoords);
@@ -181,10 +183,7 @@ void main() {
     col = vec3(0.,0.,0.);
   }
   if(u_randomise>0) {
-    vec2 relPos = gl_FragCoord.xy/u_screen;
-    if(isWithin(relPos.y, 0.5, 0.91)) {
-      col = randC(v_texCoords);
-    }
+    col = randC(v_texCoords);
   }
   gl_FragColor = vec4(col, 1.);
 
