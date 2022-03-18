@@ -45,6 +45,6 @@ public abstract class Utils {
     }
 
     public static long lastModified(String folderName) {
-        return getFragmentShader(folderName).lastModified();
+        return Math.max(getFragmentShader(folderName).lastModified(), getVertexShader(folderName).lastModified());
     }
 }

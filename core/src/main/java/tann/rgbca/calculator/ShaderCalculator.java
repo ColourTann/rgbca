@@ -2,8 +2,11 @@ package tann.rgbca.calculator;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.CpuSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -13,9 +16,9 @@ import tann.rgbca.Utils;
 
 public class ShaderCalculator {
 
-    FrameBuffer fb;
+    FrameBuffer buffer;
     Texture previous;
-    SpriteBatch sb;
+    Batch batch;
     String folderName;
     ShaderProgram sp;
     long lastModified;
@@ -28,10 +31,10 @@ public class ShaderCalculator {
 
     public ShaderCalculator(String folderName, int width, int height) {
         this.folderName = folderName;
-        fb = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
-        previous = fb.getColorBufferTexture();
-        sb = new SpriteBatch();
-        sb.getProjectionMatrix().setToOrtho2D(0,0,width,height);
+        buffer = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        previous = buffer.getColorBufferTexture();
+        batch = new SpriteBatch();
+        batch.getProjectionMatrix().setToOrtho2D(0,0,width,height);
         ShaderProgram.pedantic = false;
         reseed();
         compileShader();
@@ -81,19 +84,24 @@ public class ShaderCalculator {
             return previous;
         }
 
-        sb.begin();
-        fb.begin();
-
-        sb.setShader(sp);
+        batch.begin();
+        buffer.begin();
+//        Gdx.gl.glClearColor(0, 0, 0, 1f);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.setShader(sp);
         setUniforms(sp);
 
-        sb.draw(previous, 0, 0, fb.getWidth(), fb.getHeight(), 0, 0,
-            fb.getWidth(), fb.getHeight(),
+        batch.draw(previous,
+            0, 0,
+            buffer.getWidth(), buffer.getHeight(),
+            0, 0,
+            buffer.getWidth(), buffer.getHeight(),
             false, flip);
-        sb.end();
 
-        fb.end();
-        Texture result = fb.getColorBufferTexture();
+        batch.end();
+
+        buffer.end();
+        Texture result = buffer.getColorBufferTexture();
         previous = result;
         flip = true;
         randomise = false;
@@ -106,7 +114,7 @@ public class ShaderCalculator {
         sp.setUniformi("u_seed", seed);
         sp.setUniformi("u_randomise", randomise?1:0);
         sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
-        sp.setUniformf("u_screen", new Vector2(fb.getWidth(), fb.getHeight()));
+        sp.setUniformf("u_screen", new Vector2(buffer.getWidth(), buffer.getHeight()));
         sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
         sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
     }

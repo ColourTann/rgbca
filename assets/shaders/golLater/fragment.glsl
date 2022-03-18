@@ -22,10 +22,8 @@ vec2 onePixel() {
   return (vec2(1.00, 1.00) / u_screen);
 }
 
-vec3 getRelative(vec2 delta) {
-  return texture2D(u_texture, 
-    (gl_FragCoord.xy + delta + 0.5)/u_screen
-    );
+vec3 getRelative(ivec2 delta) {
+  return texelFetch(u_texture, ivec2(v_texCoords*u_screen)+delta, 0);
 }
 
 bool isClick() {
@@ -46,7 +44,7 @@ vec3 getAverage(int dist) {
       if(x==0&&y==0) {
         continue;
       }
-      vec3 val = getRelative(vec2(x,y));
+      vec3 val = getRelative(ivec2(x,y));
       total += val;
     }
   }
@@ -60,7 +58,7 @@ vec3 getAverageExactDist(int dist) {
       if(abs(x)+abs(y) != dist) {
         continue;
       }
-      vec3 val = getRelative(vec2(x,y));
+      vec3 val = getRelative(ivec2(x,y));
       total += val;
     }
   }
@@ -74,7 +72,7 @@ vec3 getMax(int dist) {
       if(x==0&&y==0) {
         continue;
       }
-      vec3 val = getRelative(vec2(x,y));
+      vec3 val = getRelative(ivec2(x,y));
       maxes = max(maxes, val);
     }
   }
@@ -109,7 +107,7 @@ vec3 avgExactDistHex(int dist) {
       if(hexDist(x,y)!=dist) {
         continue;
       }
-      total += getRelative(vec2(x,y));
+      total += getRelative(ivec2(x,y));
       amt++;
     }
   }
@@ -174,8 +172,8 @@ const int VAL_LN = 6;
 
 float[VAL_LN] getPossibleValues() {
 
-  vec3 avg1 = getAverage(1);
-  vec3 avg2 = getAverage(2);
+  vec3 avg1 = avgDistHex(1);
+  vec3 avg2 = avgDistHex(2);
 
   float[VAL_LN] result;
 
@@ -202,7 +200,7 @@ void main() {
   + int(v_texCoords.y*down+15)*92183;
   // seed = u_seed + 17*238 + 15 * 92138;
 
-  vec3 me = texture2D(u_texture, v_texCoords).xyz;
+  vec3 me = texelFetch(u_texture, ivec2(v_texCoords), 0).xyz;
 
   float[VAL_LN] pVals = getPossibleValues();
 

@@ -15,14 +15,16 @@ public class GenericScreen extends Screen {
     ShaderCalculator shaderCalculator;
     String folderName;
     int scale;
-    int frames = 1;
+    float speed = 1;
+    Texture t;
     public GenericScreen(String folderName, int inScale) {
-        this(folderName, inScale, null);
+        this(folderName, inScale, null, 1);
     }
-    public GenericScreen(String folderName, int inScale, Integer seed) {
+    public GenericScreen(String folderName, int inScale, Integer seed, float speed) {
         super();
         this.folderName = folderName;
         this.scale = inScale;
+        this.speed = speed;
         shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/inScale, Gdx.graphics.getHeight()/inScale);
         if(seed != null) {
             shaderCalculator.reseed(seed);
@@ -45,14 +47,14 @@ public class GenericScreen extends Screen {
                         if(shift) {
                             setPixelScale(scale+1);
                         } else {
-                            frames++;
+                            changeSpeed(1);
                         }
                     } break;
                     case Input.Keys.MINUS: {
                         if(shift) {
                             setPixelScale(Math.max(1, scale-1));
                         } else {
-                            frames = Math.max(1, frames-1);
+                            changeSpeed(-1);
                         }
                     } break;
                     case Input.Keys.S:
@@ -78,6 +80,23 @@ public class GenericScreen extends Screen {
                 return super.keyDown(event, keycode);
             }
         });
+        t = shaderCalculator.nextFrame();
+    }
+
+    private void changeSpeed(int delta) {
+        if(delta>0) {
+            if (speed >= 1) {
+                speed++;
+            } else {
+                speed *= 2;
+            }
+        } else {
+            if (speed >= 2) {
+                speed--;
+            } else {
+                speed /= 2;
+            }
+        }
     }
 
     private void setPixelScale(int i) {
@@ -87,11 +106,14 @@ public class GenericScreen extends Screen {
 
     @Override
     public Screen copy() {
-        return new GenericScreen(folderName, scale, shaderCalculator.getSeed());
+        return new GenericScreen(folderName, scale, shaderCalculator.getSeed(), speed);
     }
+
+    float ticker;
 
     @Override
     public void act(float delta) {
+        ticker +=speed;
         if(Gdx.input.isButtonPressed(3)) {
             float ratio = Gdx.input.getX()/getWidth();
             float mult = Interpolation.linear.apply(0, 1, ratio);
@@ -102,13 +124,13 @@ public class GenericScreen extends Screen {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        if(frames <= 0) return;
         batch.end();
-        Texture t = null;
-        for(int i=0;i<frames;i++) {
+        while(ticker>=1) {
             t = shaderCalculator.nextFrame();
+            ticker--;
         }
         t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+//        t.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         batch.begin();
         batch.draw(t, 0, 0, getWidth(), getHeight(), 0, 0, t.getWidth(), t.getHeight(), false, true);
         super.draw(batch, parentAlpha);

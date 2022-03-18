@@ -7,6 +7,7 @@ public abstract class Screen extends Group {
 
     public Screen() {
         setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        setTransform(false);
     }
 
     public Screen copy() {
