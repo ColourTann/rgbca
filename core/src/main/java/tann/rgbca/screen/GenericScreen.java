@@ -130,7 +130,6 @@ public class GenericScreen extends Screen {
             ticker--;
         }
         t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-//        t.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         batch.begin();
         batch.draw(t, 0, 0, getWidth(), getHeight(), 0, 0, t.getWidth(), t.getHeight(), false, true);
         super.draw(batch, parentAlpha);

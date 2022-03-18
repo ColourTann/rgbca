@@ -1,5 +1,7 @@
+#version 150
+
 #ifdef GL_ES
-precision mediump float;
+precision highp float;
 #endif 
  
 // varying input variables from our vertex shader
@@ -12,7 +14,7 @@ uniform float u_ml;
 uniform float u_mult;
 uniform float u_mr;
 uniform vec2 u_mloc;
-uniform vec2 u_screen;
+uniform ivec2 u_screen;
  
 // a special uniform for textures 
 uniform sampler2D u_texture;
@@ -22,11 +24,17 @@ vec2 onePixel() {
 }
 
 vec3 getRelative(ivec2 delta) {
-  return texelFetch(u_texture, ivec2(gl_FragCoord.xy)+delta, 0);
+    // vec2 onePixel = vec2(1.0/u_screen.x, 1.0/u_screen.y);
+    // return texture2D(u_texture, v_texCoords+onePixel*delta);
+  
+  ivec2 tmp = ivec2(gl_FragCoord.xy)+delta;
+  return texelFetch(u_texture, tmp, 0).xyz;
 }
 
 bool isClick() {
-  vec2 locPos = gl_FragCoord/u_screen;
+  // return true;
+
+  vec2 locPos = gl_FragCoord.xy/u_screen;
   vec2 dist = locPos - u_mloc;
   float totalDist = length(dist);
   return totalDist<.022 && u_ml>0;
@@ -35,49 +43,6 @@ bool isClick() {
 bool isClear() {
   return u_mr > 0;
 }
-
-vec3 getAverage(int dist) {
-  vec3 total = vec3(0.,0.,0.);
-  for(float y=-dist;y<=dist;y++) {
-    for(float x=-dist;x<=dist;x++) {
-      if(x==0&&y==0) {
-        continue;
-      }
-      vec3 val = getRelative(ivec2(x,y));
-      total += val;
-    }
-  }
-  return total/8.;
-}
-
-vec3 getAverageExactDist(int dist) {
-  vec3 total = vec3(0.,0.,0.);
-  for(float y=-dist;y<=dist;y++) {
-    for(float x=-dist;x<=dist;x++) {
-      if(abs(x)+abs(y) != dist) {
-        continue;
-      }
-      vec3 val = getRelative(ivec2(x,y));
-      total += val;
-    }
-  }
-  return total/8.;
-}
-
-vec3 getMax(int dist) {
-  vec3 maxes = vec3(0.,0.,0.);
-  for(float y=-dist;y<=dist;y++) {
-    for(float x=-dist;x<=dist;x++) {
-      if(x==0&&y==0) {
-        continue;
-      }
-      vec3 val = getRelative(ivec2(x,y));
-      maxes = max(maxes, val);
-    }
-  }
-  return maxes;
-}
-
 
 bool isWithin(float val, float target, float epsilon) {
   return abs(val-target)<=epsilon;
@@ -99,7 +64,7 @@ int hexDist(int dx, int dy) {
 }
 
 vec3 avgExactDistHex(int dist) {
-  int amt = 0;
+  float amt = 0;
   vec3 total = vec3(0.);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
@@ -110,20 +75,20 @@ vec3 avgExactDistHex(int dist) {
       amt++;
     }
   }
-  return total/(float)amt;
+  return total/amt;
 }
 
 vec3 avgDistHex(int dist) {
-  int amt = 0;
+  float amt = 0;
   vec3 total = vec3(0.);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
       if(hexDist(x,y)>dist) { continue;}
-      total += getRelative(vec2(x,y));
+      total += getRelative(ivec2(x,y));
       amt++;
     }
   }
-  return total/(float)amt;
+  return total/amt;
 }
 
 float rand(vec2 co){
@@ -197,10 +162,8 @@ void main() {
   seed = u_seed + 
     int(v_texCoords.x*across+17.)*238 
   + int(v_texCoords.y*down+15)*92183;
-  // seed = u_seed + 17*238 + 15 * 92138;
 
-  vec3 me = texelFetch(u_texture, ivec2(gl_FragCoord.xy), 0);
-
+  vec3 me = getRelative(ivec2(0,0));
 
   float[VAL_LN] pVals = getPossibleValues();
 
@@ -208,7 +171,8 @@ void main() {
 
   vec3 col = mix(me, result, u_mult);
 
-
+  // col = me;
+  // col = me;
   if(isClick()) {
     col = randC(v_texCoords);
     // col = vec3(.5,.5,.5);
@@ -217,7 +181,7 @@ void main() {
     col = vec3(0.,0.,0.);
   }
   if(u_randomise>0) {
-    vec2 relPos = gl_FragCoord/u_screen;
+    vec2 relPos = gl_FragCoord.xy/u_screen;
     if(isWithin(relPos.y, 0.5, 0.91)) {
       col = randC(v_texCoords);
     }

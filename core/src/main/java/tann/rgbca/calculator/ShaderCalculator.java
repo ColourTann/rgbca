@@ -4,11 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.CpuSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Vector2;
 import tann.rgbca.Main;
 import tann.rgbca.Utils;
 
@@ -37,7 +35,9 @@ public class ShaderCalculator {
         ShaderProgram.pedantic = false;
         reseed();
         compileShader();
-        mesh = createFullScreenQuad();
+//        mesh = createFullScreenQuad();
+//        mesh = fromLibgdxWiki();
+        mesh = createFullScreenQuadFromWIki();
     }
 
     private Mesh createFullScreenQuad() {
@@ -51,6 +51,56 @@ public class ShaderCalculator {
             -1, 1, 0, 0, 1
         };
         mesh.setVertices( verts );
+        mesh.disableInstancedRendering();
+        return mesh;
+    }
+
+    private Mesh createFullScreenQuadFromWIki() {
+
+        float[] verts = new float[20];
+        int i = 0;
+
+        verts[i++] = -1; // x1
+        verts[i++] = -1; // y1
+        verts[i++] = 0;
+        verts[i++] = 0f; // u1
+        verts[i++] = 0f; // v1
+
+        verts[i++] = 1f; // x2
+        verts[i++] = -1; // y2
+        verts[i++] = 0;
+        verts[i++] = 1f; // u2
+        verts[i++] = 0f; // v2
+
+        verts[i++] = 1f; // x3
+        verts[i++] = 1f; // y2
+        verts[i++] = 0;
+        verts[i++] = 1f; // u3
+        verts[i++] = 1f; // v3
+
+        verts[i++] = -1; // x4
+        verts[i++] = 1f; // y4
+        verts[i++] = 0;
+        verts[i++] = 0f; // u4
+        verts[i++] = 1f; // v4
+
+        Mesh mesh = new Mesh( true, 4, 0,  // static mesh with 4 vertices and no indices
+            new VertexAttribute( VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE ),
+            new VertexAttribute( VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE+"0" ) );
+
+        mesh.setVertices( verts );
+        return mesh;
+    }
+
+    private Mesh fromLibgdxWiki() {
+        Mesh mesh = new Mesh(true, 4, 6, VertexAttribute.Position(), VertexAttribute.ColorUnpacked(), VertexAttribute.TexCoords(0));
+        mesh.setVertices(new float[] {
+            -0.5f, -0.5f, 0, 1, 1, 1, 1, 0, 1,
+            0.5f, -0.5f, 0, 1, 1, 1, 1, 1, 1,
+            0.5f, 0.5f, 0, 1, 1, 1, 1, 1, 0,
+            -0.5f, 0.5f, 0, 1, 1, 1, 1, 0, 0
+        });
+        mesh.setIndices(new short[] {0, 1, 2, 2, 3, 0});
         return mesh;
     }
 
@@ -78,12 +128,10 @@ public class ShaderCalculator {
         }
     }
 
-    boolean flip;
     public Texture pasteTexture() {
         FileHandle fh = Gdx.files.internal("images/"+Gdx.app.getClipboard().getContents()+".png");
         if(fh.exists()) {
             previous = new Texture(fh);
-            flip = false;
             return previous;
         }
         return null;
@@ -97,27 +145,18 @@ public class ShaderCalculator {
             System.out.println(sp.getLog());
             return previous;
         }
-
-        buffer.begin();
         sp.bind();
         setUniforms(sp);
-        previous.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        previous.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        previous.bind(0);
-//        sp.setUniformi("u_texture", 0);
-        mesh.render(sp,  GL20.GL_TRIANGLE_FAN);
+        previous.bind();
+        sp.setUniformi("u_texture", 0);
 
-//        batch.draw(previous,
-//            0, 0,
-//            buffer.getWidth(), buffer.getHeight(),
-//            0, 0,
-//            buffer.getWidth(), buffer.getHeight(),
-//            false, flip);
-
+        buffer.begin();
+        mesh.render(sp, GL20.GL_TRIANGLE_FAN);
         buffer.end();
         Texture result = buffer.getColorBufferTexture();
         previous = result;
-        flip = true;
+//        previous.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+//        previous.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         randomise = false;
         return result;
     }
