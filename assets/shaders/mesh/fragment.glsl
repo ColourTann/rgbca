@@ -6,7 +6,6 @@ precision highp float;
  
 // varying input variables from our vertex shader
 varying vec4 v_color;
-varying vec2 v_texCoords;
 uniform float u_t;
 uniform int u_seed;
 uniform int u_randomise;
@@ -160,8 +159,8 @@ void main() {
 
   float across = 1., down = 1.;
   seed = u_seed + 
-    int(v_texCoords.x*across+17.)*238 
-  + int(v_texCoords.y*down+15)*92183;
+    int(gl_FragCoord.x/u_screen.x*across+17.)*238 
+  + int(gl_FragCoord.y/u_screen.y*down+18)*92183;
 
   vec3 me = getRelative(ivec2(0,0));
 
@@ -171,19 +170,15 @@ void main() {
 
   vec3 col = mix(me, result, u_mult);
 
-  // col = me;
-
-  // col = me;
-  // col = me;
   if(isClick()) {
-    col = randC(v_texCoords);
+    col = randC(gl_FragCoord.xy);
     // col = vec3(.5,.5,.5);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);
   }
   if(u_randomise>0) {
-    col = randC(v_texCoords);
+    col = randC(gl_FragCoord.xy);
   }
   gl_FragColor = vec4(col, 1.);
 
