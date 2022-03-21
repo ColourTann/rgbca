@@ -11,6 +11,7 @@ uniform int u_seed;
 uniform int u_randomise;
 uniform float u_ml;
 uniform float u_mult;
+uniform float u_mix;
 uniform float u_mr;
 uniform vec2 u_mloc;
 uniform ivec2 u_screen;
@@ -63,6 +64,10 @@ int hexDist(int dx, int dy) {
   return max(abs(dx), max(abs(dy), abs(dx+dy)));
 }
 
+float circDist(float dx, float dy) {
+  return float(sqrt(dx*dx+dy*dy));
+}
+
 int squareDist(int dx, int dy) {
   return max(abs(dx),  abs(dy));
 }
@@ -111,6 +116,32 @@ vec3 avgDistHex(int dist) {
   return total/amt;
 }
 
+vec3 avgDistCirc(float dist) {
+  float amt = 0;
+  vec3 total = vec3(0.);
+  for(float y=-dist;y<=dist;y++) {
+    for(float x=-dist;x<=dist;x++) {
+      if(circDist(x,y)>dist) { continue;}
+      total += getRelative(ivec2(x,y));
+      amt++;
+    }
+  }
+  return total/amt;
+}
+
+vec3 exactDistCirc(float dist) {
+  float amt = 0;
+  vec3 total = vec3(0.);
+  for(float y=-dist;y<=dist;y++) {
+    for(float x=-dist;x<=dist;x++) {
+      if(circDist(x,y)!=dist) { continue;}
+      total += getRelative(ivec2(x,y));
+      amt++;
+    }
+  }
+  return total/amt;
+}
+
 float rand(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
@@ -152,27 +183,34 @@ float sum(float a, float b) {
   }
 }
 
-const int VAL_LN = 9;
+const int VAL_LN = 6;
 
 float[VAL_LN] getPossibleValues() {
 
-  vec3 avg1 = avgDistHex(1);
-  vec3 avg2 = avgDistHex(2);
-  vec3 avg3 = avgExactDistSq(3);
+  vec3 avg1 = exactDistCirc(5);
+  vec3 avg2 = avgDistCirc(2);
+  vec3 avg3 = avgExactDistSq(0);
+  vec3 avg4 = avgExactDistSq(3);
+
+
 
   float[VAL_LN] result;
 
-  result[0] = avg2.x;
-  result[1] = avg2.y;
-  result[2] = avg2.z;
+  result[0] = avg1.x;
+  result[1] = avg1.y;
+  result[2] = avg1.z;
 
-  result[3] = avg1.x;
-  result[4] = avg1.y;
-  result[5] = avg1.z;
+  result[3] = avg2.x;
+  result[4] = avg2.y;
+  result[5] = avg2.z;
 
-  result[6] = avg1.x;
-  result[7] = avg1.y;
-  result[8] = avg1.z;
+  // result[6] = avg3.x;
+  // result[7] = avg3.y;
+  // result[8] = avg3.z;
+
+  // result[9] = avg4.x;
+  // result[10] = avg4.y;
+  // result[11] = avg4.z;
 
   return result;
 }
@@ -189,7 +227,7 @@ float getVal(float[VAL_LN] possibles) {
 
 void main() {
 
-  float across = 8., down = 5.;
+  float across = 1., down = 1.;
   seed = u_seed + 
     int(gl_FragCoord.x/u_screen.x*across+38)*238 
   + int(gl_FragCoord.y/u_screen.y*down+33)*92183;
@@ -198,11 +236,22 @@ void main() {
 
   float[VAL_LN] pVals = getPossibleValues();
 
-  vec3 result = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
+  vec3 result1 = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
+  vec3 result2 = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
+
+  float mixx = u_mix;
+  float multt = u_mult;
+  if(false) {
+    mixx = gl_FragCoord.x/u_screen.x;
+    multt = gl_FragCoord.y/u_screen.y;
+  }
+
+  vec3 result = mix(result1, result2, mixx);
+
 
   //result = normalize(result);
 
-  vec3 col = mix(me, result, u_mult);
+  vec3 col = mix(me, result, multt);
   col = normalize(col);
   if(isClick()) {
     // col = randC(gl_FragCoord.xy);

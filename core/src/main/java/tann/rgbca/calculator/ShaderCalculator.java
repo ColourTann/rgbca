@@ -21,6 +21,7 @@ public class ShaderCalculator {
     long lastModified;
     int seed;
     float mult = .2f;
+    float mix = .5f;
     private Mesh mesh;
 
     public ShaderCalculator(String folderName, int size) {
@@ -173,6 +174,7 @@ public class ShaderCalculator {
     private void setUniforms(ShaderProgram sp) {
         sp.setUniformf("u_t", Main.t);
         sp.setUniformf("u_mult", mult);
+        sp.setUniformf("u_mix", mix);
         sp.setUniformi("u_seed", seed);
         sp.setUniformi("u_randomise", randomise?1:0);
         sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
@@ -183,6 +185,10 @@ public class ShaderCalculator {
 
     public void setMultiplier(float mult) {
         this.mult = mult;
+    }
+
+    public void setMix(float mix) {
+        this.mix = mix;
     }
 
     boolean randomise;

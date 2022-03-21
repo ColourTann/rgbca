@@ -119,6 +119,11 @@ public class GenericScreen extends Screen {
             float mult = Interpolation.linear.apply(0, 1, ratio);
             shaderCalculator.setMultiplier(mult);
         }
+        if(Gdx.input.isButtonPressed(4)) {
+            float ratio = Gdx.input.getX()/getWidth();
+            float mult = Interpolation.linear.apply(0, 1, ratio);
+            shaderCalculator.setMix(mult);
+        }
         super.act(delta);
     }
 
