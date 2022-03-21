@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import tann.rgbca.Main;
 import tann.rgbca.calculator.ShaderCalculator;
 
@@ -29,12 +30,22 @@ public class GenericScreen extends Screen {
         if(seed != null) {
             shaderCalculator.reseed(seed);
         }
-        addListener(new InputListener(){
+        addListener(new ClickListener(){
+
+
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 if(button == 2) {
                     shaderCalculator.randomiseState();
+                } else if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+                    if(shaderCalculator.getMix()<0) {
+                        shaderCalculator.setMix(x/getWidth());
+                        shaderCalculator.setMultiplier(y/getHeight());
+                    } else {
+                        shaderCalculator.setMix(-1);
+                        shaderCalculator.setMultiplier(-1);
+                    }
                 }
                 return super.touchDown(event, x, y, pointer, button);
             }

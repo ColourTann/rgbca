@@ -183,14 +183,14 @@ float sum(float a, float b) {
   }
 }
 
-const int VAL_LN = 6;
+const int VAL_LN = 9;
 
 float[VAL_LN] getPossibleValues() {
 
-  vec3 avg1 = exactDistCirc(5);
-  vec3 avg2 = avgDistCirc(2);
-  vec3 avg3 = avgExactDistSq(0);
-  vec3 avg4 = avgExactDistSq(3);
+  vec3 avg1 = avgExactDistHex(12);
+  vec3 avg2 = avgDistHex(7);
+  vec3 avg3 = avgExactDistHex(3);
+  // vec3 avg4 = avgExactDistSq(3);
 
 
 
@@ -204,9 +204,9 @@ float[VAL_LN] getPossibleValues() {
   result[4] = avg2.y;
   result[5] = avg2.z;
 
-  // result[6] = avg3.x;
-  // result[7] = avg3.y;
-  // result[8] = avg3.z;
+  result[6] = avg3.x;
+  result[7] = avg3.y;
+  result[8] = avg3.z;
 
   // result[9] = avg4.x;
   // result[10] = avg4.y;
@@ -245,6 +245,12 @@ void main() {
     mixx = gl_FragCoord.x/u_screen.x;
     multt = gl_FragCoord.y/u_screen.y;
   }
+  if(u_mix < 0) {
+    mixx = gl_FragCoord.x/u_screen.x;
+  }
+  if(u_mult < 0) {
+      multt = gl_FragCoord.y/u_screen.y;
+  }
 
   vec3 result = mix(result1, result2, mixx);
 
@@ -254,8 +260,8 @@ void main() {
   vec3 col = mix(me, result, multt);
   col = normalize(col);
   if(isClick()) {
-    // col = randC(gl_FragCoord.xy);
-    col = vec3(.5,.5,.5);
+    col = randC(gl_FragCoord.xy);
+    // col = vec3(.5,.5,.5);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);

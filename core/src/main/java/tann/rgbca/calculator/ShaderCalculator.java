@@ -199,4 +199,8 @@ public class ShaderCalculator {
     public int getSeed() {
         return seed;
     }
+
+    public float getMix() {
+        return mix;
+    }
 }
