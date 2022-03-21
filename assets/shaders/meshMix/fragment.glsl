@@ -38,7 +38,7 @@ bool isClick() {
   vec2 locPos = gl_FragCoord.xy/u_screen;
   vec2 dist = locPos - u_mloc;
   float totalDist = length(dist);
-  return totalDist<.022 && u_ml>0;
+  return totalDist<.052 && u_ml>0;
 }
 
 bool isClear() {
@@ -150,17 +150,11 @@ vec3 randC(vec2 co) {
   return vec3(rand(co), rand(co+1.), rand(co+2.));
 }
 
-int magpie_gen(in int n)
-{
-  return n*997;
-  // n = (n << 13) ^ n; 
-  // return (n * (n*n*15731+789221) + 1376312589) & 0x7fffffff;
-}
 
 int seed;
 int rng(int bound) {
-  seed = magpie_gen(seed)+u_seed;
-  return seed%bound;
+  seed = seed * 12357 % 0x10001;
+  return bound * (seed - 1) >> 16;
 }
 
 const int NUM_SUMS = 12;
@@ -187,9 +181,9 @@ const int VAL_LN = 9;
 
 float[VAL_LN] getPossibleValues() {
 
-  vec3 avg1 = avgExactDistHex(12);
-  vec3 avg2 = avgDistHex(7);
-  vec3 avg3 = avgExactDistHex(3);
+  vec3 avg1 = avgDistCirc(rng(8)+5);
+  vec3 avg2 = avgExactDistSq(rng(4)+4);
+  vec3 avg3 = avgDistCirc(rng(2)+1) ;
   // vec3 avg4 = avgExactDistSq(3);
 
 
@@ -258,10 +252,10 @@ void main() {
   //result = normalize(result);
 
   vec3 col = mix(me, result, multt);
-  col = normalize(col);
+  // col = normalize(col);
   if(isClick()) {
-    col = randC(gl_FragCoord.xy);
-    // col = vec3(.5,.5,.5);
+    // col = randC(gl_FragCoord.xy);
+    col = vec3(.5,.0,.9);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);
