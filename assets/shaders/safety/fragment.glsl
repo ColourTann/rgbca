@@ -17,7 +17,8 @@ uniform vec2 u_mloc;
 uniform ivec2 u_screen;
  
 // a special uniform for textures 
-uniform sampler2D u_texture;
+uniform sampler2D u_texture0;
+uniform sampler2D u_texture1;
  
 vec2 onePixel() {
   return (vec2(1.00, 1.00) / u_screen);
@@ -29,7 +30,7 @@ vec3 getRelative(ivec2 delta) {
   
   ivec2 tmp = ivec2(gl_FragCoord.xy)+delta;
   tmp = (tmp+u_screen) % u_screen;
-  return texelFetch(u_texture, tmp, 0).xyz;
+  return texelFetch(u_texture0, tmp, 0).xyz;
 }
 
 bool isClick() {
@@ -220,50 +221,26 @@ float getVal(float[VAL_LN] possibles) {
 }
 
 void main() {
-
-  float across = 1., down = 1.;
-  seed = u_seed + 
-    int(gl_FragCoord.x/u_screen.x*across+38)*238 
-  + int(gl_FragCoord.y/u_screen.y*down+33)*92183;
-
-  vec3 me = getRelative(ivec2(0,0));
-
-  float[VAL_LN] pVals = getPossibleValues();
-
-  vec3 result1 = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
-  vec3 result2 = vec3(getVal(pVals), getVal(pVals), getVal(pVals));
-
-  float mixx = u_mix;
-  float multt = u_mult;
-  if(false) {
-    mixx = gl_FragCoord.x/u_screen.x;
-    multt = gl_FragCoord.y/u_screen.y;
+  ivec2 v = ivec2(gl_FragCoord.xy);
+  vec4 c0 = texelFetch(u_texture0 , v, 0);
+  vec4 c1 = texelFetch(u_texture1, v, 0);
+  vec4 diff = abs(c0-c1);
+  float l = length(diff.xyz);
+  float newAlpha = c1.a;
+  if(l < 0.2) {
+    newAlpha += 0.05 ;
+  } else {
+    newAlpha = 0.;
   }
-  if(u_mix < 0) {
-    mixx = gl_FragCoord.x/u_screen.x;
-  }
-  if(u_mult < 0) {
-      multt = gl_FragCoord.y/u_screen.y;
-  }
+  // float alphaFactor = 0.1-l;
+  // float newAlpha = c1.a + alphaFactor * .01;
+  //    float newAlpha = c1.a+alphaFactor;
 
-  vec3 result = mix(result1, result2, mixx);
-
-
-  //result = normalize(result);
-
-  vec3 col = mix(me, result, multt);
-  // col = normalize(col);
-  if(isClick()) {
-    // col = randC(gl_FragCoord.xy);
-    col = vec3(.5,.0,.9);
-  }
-  if(isClear()) {
-    col = vec3(0.,0.,0.);
-  }
-  if(u_randomise>0) {
-    col = randC(gl_FragCoord.xy);
-  }
-  gl_FragColor = vec4(col, 1.);
+  gl_FragColor = vec4(c0.rgb , newAlpha);
+  // gl_FragColor.a = max(0., min(1., c0.a-l));
+  // gl_FragColor.a = 0.;
+  // gl_FragColor.r = 0.0;
+  // gl_FragColor = vec4(1.,0.,1., 1.);
 
 }
 

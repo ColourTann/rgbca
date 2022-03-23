@@ -58,7 +58,7 @@ public class ShaderCalculator {
         return mesh;
     }
 
-    private Mesh createFullScreenQuadFromWIki() {
+    public static Mesh createFullScreenQuadFromWIki() {
 
         float[] verts = new float[20];
         int i = 0;

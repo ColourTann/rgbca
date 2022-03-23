@@ -2,22 +2,26 @@ package tann.rgbca.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import tann.rgbca.Main;
+import tann.rgbca.calculator.SafetyCalculator;
 import tann.rgbca.calculator.ShaderCalculator;
 
 public class GenericScreen extends Screen {
-
+    Texture chk;
     ShaderCalculator shaderCalculator;
+    SafetyCalculator safetyCalculator;
     String folderName;
     int scale;
     float speed = 1;
-    Texture t;
+    Texture calcTexture;
     public GenericScreen(String folderName, int inScale) {
         this(folderName, inScale, null, 1);
     }
@@ -26,6 +30,7 @@ public class GenericScreen extends Screen {
         this.folderName = folderName;
         this.scale = inScale;
         this.speed = speed;
+        safetyCalculator = new SafetyCalculator(Gdx.graphics.getWidth()/inScale);
         shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/inScale, Gdx.graphics.getHeight()/inScale);
         if(seed != null) {
             shaderCalculator.reseed(seed);
@@ -91,7 +96,11 @@ public class GenericScreen extends Screen {
                 return super.keyDown(event, keycode);
             }
         });
-        t = shaderCalculator.nextFrame();
+        calcTexture = shaderCalculator.nextFrame();
+
+        FileHandle fh = Gdx.files.internal("images/checker.png");
+        chk = new Texture(fh);
+
     }
 
     private void changeSpeed(int delta) {
@@ -135,19 +144,46 @@ public class GenericScreen extends Screen {
             float mult = Interpolation.linear.apply(0, 1, ratio);
             shaderCalculator.setMix(mult);
         }
+//        while(ticker>=1) {
+//            calcTexture = shaderCalculator.nextFrame();
+//            ticker--;
+//        }
+        Texture calc = shaderCalculator.nextFrame();
+        drawTexture = safetyCalculator.nextFrame(calc);
         super.act(delta);
     }
-
+    Texture drawTexture;
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        batch.end();
-        while(ticker>=1) {
-            t = shaderCalculator.nextFrame();
-            ticker--;
-        }
-        t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        batch.begin();
-        batch.draw(t, 0, 0, getWidth(), getHeight(), 0, 0, t.getWidth(), t.getHeight(), false, true);
+        batch.flush();
+        batch.draw(chk, 0, 0, getWidth(), getHeight());
+        batch.flush();
+        batch.draw(drawTexture, 0, 0, getWidth(), getHeight(), 0, 0, (int)getWidth(), (int)getHeight(), false, true);
+
         super.draw(batch, parentAlpha);
     }
+
+    /*
+    if(Utils.lastModified(folderName) != lastModified) {
+    compileShader();
+}
+if(!sp.isCompiled()) {
+    System.out.println(sp.getLog());
+    return previous;
+}
+sp.bind();
+setUniforms(sp);
+previous.bind();
+sp.setUniformi("u_texture", 0);
+buffer1.begin();
+mesh.render(sp, GL20.GL_TRIANGLE_FAN);
+buffer1.end();
+Texture result = buffer1.getColorBufferTexture();
+previous = result;
+swapBuffers();
+  previous.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+  previous.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+randomise = false;
+return result;
+     */
 }
