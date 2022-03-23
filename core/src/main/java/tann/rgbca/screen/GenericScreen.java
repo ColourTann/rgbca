@@ -117,6 +117,7 @@ public class GenericScreen extends Screen {
                 speed /= 2;
             }
         }
+        System.out.println("new speed: "+speed);
     }
 
     private void setPixelScale(int i) {
@@ -133,7 +134,6 @@ public class GenericScreen extends Screen {
 
     @Override
     public void act(float delta) {
-        ticker +=speed;
         if(Gdx.input.isButtonPressed(3)) {
             float ratio = Gdx.input.getX()/getWidth();
             float mult = Interpolation.linear.apply(0, 1, ratio);
@@ -144,12 +144,12 @@ public class GenericScreen extends Screen {
             float mult = Interpolation.linear.apply(0, 1, ratio);
             shaderCalculator.setMix(mult);
         }
-//        while(ticker>=1) {
-//            calcTexture = shaderCalculator.nextFrame();
-//            ticker--;
-//        }
-        Texture calc = shaderCalculator.nextFrame();
-        drawTexture = safetyCalculator.nextFrame(calc);
+        ticker +=speed;
+        while(ticker>=1) {
+            calcTexture = shaderCalculator.nextFrame();
+            ticker--;
+        }
+        drawTexture = safetyCalculator.nextFrame(calcTexture);
         super.act(delta);
     }
     Texture drawTexture;
@@ -162,28 +162,4 @@ public class GenericScreen extends Screen {
 
         super.draw(batch, parentAlpha);
     }
-
-    /*
-    if(Utils.lastModified(folderName) != lastModified) {
-    compileShader();
-}
-if(!sp.isCompiled()) {
-    System.out.println(sp.getLog());
-    return previous;
-}
-sp.bind();
-setUniforms(sp);
-previous.bind();
-sp.setUniformi("u_texture", 0);
-buffer1.begin();
-mesh.render(sp, GL20.GL_TRIANGLE_FAN);
-buffer1.end();
-Texture result = buffer1.getColorBufferTexture();
-previous = result;
-swapBuffers();
-  previous.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-  previous.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-randomise = false;
-return result;
-     */
 }

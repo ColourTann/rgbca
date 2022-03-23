@@ -86,7 +86,6 @@ public class SafetyCalculator {
             System.out.println(sp.getLog());
             return previous;
         }
-        buffer = new FrameBuffer(Pixmap.Format.RGBA8888, buffer.getWidth(), buffer.getHeight(), false);
         sp.bind();
 //        newTexture = copy(newTexture);
         newTexture.bind(0);

@@ -181,9 +181,9 @@ const int VAL_LN = 9;
 
 float[VAL_LN] getPossibleValues() {
 
-  vec3 avg1 = avgDistCirc(rng(3)+1);
-  vec3 avg2 = avgExactDistSq(rng(3)+1);
-  vec3 avg3 = avgDistHex(rng(3)+2) ;
+  vec3 avg1 = avgDistHex(10);
+  vec3 avg2 = avgDistCirc(7);
+  vec3 avg3 = avgExactDistHex (4) ;
   // vec3 avg4 = avgExactDistSq(3);
 
 
@@ -252,7 +252,7 @@ void main() {
   //result = normalize(result);
 
   vec3 col = mix(me, result, multt);
-  // col = normalize(col);
+   col = normalize(col);
   if(isClick()) {
     // col = randC(gl_FragCoord.xy);
     col = vec3(.5,.0,.9);
