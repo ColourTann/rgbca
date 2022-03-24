@@ -181,9 +181,9 @@ const int VAL_LN = 9;
 
 float[VAL_LN] getPossibleValues() {
 
-  vec3 avg1 = avgDistHex(10);
-  vec3 avg2 = avgDistCirc(7);
-  vec3 avg3 = avgExactDistHex (4) ;
+  vec3 avg1 = avgDistCirc(rng(5)+8);
+  vec3 avg2 = avgExactDistSq (rng(4)+3);
+  vec3 avg3 = exactDistCirc (rng(3)) ;
   // vec3 avg4 = avgExactDistSq(3);
 
 
@@ -214,7 +214,14 @@ float getVal(float[VAL_LN] possibles) {
   float val2 = possibles[rng(VAL_LN)];
   float val3 = possibles[rng(VAL_LN)];
   float val4 = possibles[rng(VAL_LN)];
-  float result = sum(sum(val1, val2), sum(val3, val4));
+  float val5 = possibles[rng(VAL_LN)];
+  float val6 = possibles[rng(VAL_LN)];
+  float val7 = possibles[rng(VAL_LN)];
+  float val8 = possibles[rng(VAL_LN)];
+  float result1 = sum(sum(val1, val2), sum(val3, val4));
+  float result2 = sum(sum(val5, val6), sum(val7, val8));
+  float result = sum(result1, result2);
+  // float result = sum(val1, val2); 
 
   return mod(abs(result), 1.000001);
 }
@@ -247,15 +254,15 @@ void main() {
   }
 
   vec3 result = mix(result1, result2, mixx);
-
+  
 
   //result = normalize(result);
 
   vec3 col = mix(me, result, multt);
-   col = normalize(col);
+   //col = normalize(col);
   if(isClick()) {
     // col = randC(gl_FragCoord.xy);
-    col = vec3(.5,.0,.9);
+    col = vec3(.5,.5,.5);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);

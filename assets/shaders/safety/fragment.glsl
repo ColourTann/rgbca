@@ -18,7 +18,7 @@ void main() {
   float l = length(diff.xyz);
   float newAlpha = c1.a;
   if(l < 0.08) {
-    newAlpha += 0.05  ;
+    newAlpha += 0.03;
   } else {
     newAlpha = max(0., c1.a-.3);
     // newAlpha = 0.;
