@@ -3,11 +3,8 @@ package tann.rgbca.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import tann.rgbca.Main;
@@ -41,15 +38,15 @@ public class GenericScreen extends Screen {
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                if(button == 2) {
+                if(button == 3) {
+                    shaderCalculator.setMiddle();
+                } else if(button == 2) {
                     shaderCalculator.randomiseState();
                 } else if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-                    if(shaderCalculator.getMix()<0) {
-                        shaderCalculator.setMix(x/getWidth());
-                        shaderCalculator.setMultiplier(y/getHeight());
-                    } else {
-                        shaderCalculator.setMix(-1);
-                        shaderCalculator.setMultiplier(-1);
+                    if(shaderCalculator.isShowMore()) {
+                        shaderCalculator.addWeight(x/getWidth());
+                        shaderCalculator.addWeight(y/getHeight());
+                        shaderCalculator.randomiseState();
                     }
                 }
                 return super.touchDown(event, x, y, pointer, button);
@@ -77,6 +74,9 @@ public class GenericScreen extends Screen {
                         shaderCalculator.pasteFolder();
                         GenericScreen.this.folderName = Gdx.app.getClipboard().getContents();
                         break;
+                    case Input.Keys.M:
+                        shaderCalculator.toggleShowMore();
+                        break;
                     case Input.Keys.R:
                         if(shift) {
                             try {
@@ -92,6 +92,16 @@ public class GenericScreen extends Screen {
                     case Input.Keys.T: {
                         shaderCalculator.pasteTexture();
                     } break;
+                    case Input.Keys.BACKSPACE: {
+                        shaderCalculator.popWeight();
+                        shaderCalculator.popWeight();
+                        break;
+                    }
+                    case Input.Keys.ENTER: {
+                        shaderCalculator.incReseeds();
+                        shaderCalculator.randomiseState();
+                        break;
+                    }
                 }
                 return super.keyDown(event, keycode);
             }
@@ -134,16 +144,6 @@ public class GenericScreen extends Screen {
 
     @Override
     public void act(float delta) {
-        if(Gdx.input.isButtonPressed(3)) {
-            float ratio = Gdx.input.getX()/getWidth();
-            float mult = Interpolation.linear.apply(0, 1, ratio);
-            shaderCalculator.setMultiplier(mult);
-        }
-        if(Gdx.input.isButtonPressed(4)) {
-            float ratio = Gdx.input.getX()/getWidth();
-            float mult = Interpolation.linear.apply(0, 1, ratio);
-            shaderCalculator.setMix(mult);
-        }
         ticker +=speed;
         while(ticker>=1) {
             calcTexture = shaderCalculator.nextFrame();

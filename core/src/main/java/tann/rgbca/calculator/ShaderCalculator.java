@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import tann.rgbca.Main;
 import tann.rgbca.Utils;
 
+import java.util.Arrays;
+
 public class ShaderCalculator {
 
     FrameBuffer buffer1;
@@ -20,9 +22,11 @@ public class ShaderCalculator {
     ShaderProgram sp;
     long lastModified;
     int seed;
-    float mult = .2f;
-    float mix = .5f;
     private Mesh mesh;
+    final static int NUM_WEIDHTS = 128;
+    float[] weights = new float[NUM_WEIDHTS];
+    float[] reseeds = new float[NUM_WEIDHTS];
+    private int showMore =1;
 
     public ShaderCalculator(String folderName, int size) {
         this(folderName, size, size);
@@ -115,6 +119,12 @@ public class ShaderCalculator {
         this.seed = num;
         System.out.println("seed: " +seed);
         randomiseState();
+        resetWeights();
+    }
+
+    private void resetWeights() {
+        Arrays.fill(weights, -1);
+        Arrays.fill(reseeds, 0);
     }
 
     public void pasteFolder() {
@@ -162,6 +172,7 @@ public class ShaderCalculator {
 //        previous.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 //        previous.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         randomise = false;
+        middle = false;
         return result;
     }
 
@@ -173,22 +184,16 @@ public class ShaderCalculator {
 
     private void setUniforms(ShaderProgram sp) {
         sp.setUniformf("u_t", Main.t);
-        sp.setUniformf("u_mult", mult);
-        sp.setUniformf("u_mix", mix);
         sp.setUniformi("u_seed", seed);
         sp.setUniformi("u_randomise", randomise?1:0);
         sp.setUniformf("u_mloc", Utils.makeMouseVec(true));
         sp.setUniformi("u_screen", buffer1.getWidth(), buffer1.getHeight());
         sp.setUniformf("u_ml", Gdx.input.isButtonPressed(0) ? 1 : 0);
         sp.setUniformf("u_mr", Gdx.input.isButtonPressed(1) ? 1 : 0);
-    }
-
-    public void setMultiplier(float mult) {
-        this.mult = mult;
-    }
-
-    public void setMix(float mix) {
-        this.mix = mix;
+        sp.setUniformi("u_showMore", showMore);
+        sp.setUniformi("u_middle", middle?1:0);
+        sp.setUniform1fv("u_weights", weights, 0, weights.length);
+        sp.setUniform1fv("u_reseeds", reseeds, 0, reseeds.length);
     }
 
     boolean randomise;
@@ -200,7 +205,51 @@ public class ShaderCalculator {
         return seed;
     }
 
-    public float getMix() {
-        return mix;
+    public void addWeights(float... weights) {
+        for(float f:weights) {
+            addWeight(f);
+        }
+    }
+
+    public void addWeight(float weight) {
+        int index = getWeightIndex();
+        if(index != -1) {
+            weights[index] = weight;
+        }
+    }
+
+    public float popWeight() {
+        int index = getWeightIndex();
+        if(index > 0) {
+            index--;
+            float tmp = weights[index];
+            weights[index] = -1;
+            return tmp;
+        }
+        return -1;
+    }
+
+    private int getWeightIndex() {
+        for(int i=0;i<weights.length;i++) {
+            if(weights[i]==-1) return i;
+        }
+        return -1;
+    }
+
+    public void toggleShowMore() {
+        this.showMore = 1-showMore;
+    }
+
+    public boolean isShowMore() {
+        return showMore==1;
+    }
+
+    public void incReseeds() {
+        reseeds[getWeightIndex()]++;
+    }
+
+    boolean middle;
+    public void setMiddle() {
+        middle = true;
     }
 }
