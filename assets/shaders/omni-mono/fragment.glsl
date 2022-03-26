@@ -175,7 +175,7 @@ float sum(float a, float b) {
   }
 }
 
-const int VAL_LN = 3;
+const int VAL_LN = 9;
 
 float[VAL_LN] getPossibleValues() {
 
@@ -184,20 +184,27 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg3 = exactDistCirc (rng(3)) ;
   // vec3 avg4 = avgExactDistSq(3);
 
-  // vec3 valueOfHueNeighbour = rgb2hsv(getRelative(vec2(0.,0.)))
-  vec3 avg1 = avgDistSq(1, false);
+  vec3 hsv = rgb2hsv(getRelative(ivec2(0,0)));
+  float dist = hsv.g*rng(5);
+  float angle = hsv.r * 6.28;
+  vec3 valueOfHueNeighbour = getRelative(
+    ivec2(int(sin(angle)*dist),int(cos(angle)*dist))
+  );
+  vec3 avg1 = avgDistSq(10, false);
+  vec3 avg2 = avgDistCirc(4, false); 
 
   float[VAL_LN] result;
   result[0]=avg1.x;
   result[1]=avg1.y;
   result[2]=avg1.z;
-  // result[3]=valueOfHueNeighbour.x;
-  // result[4]=valueOfHueNeighbour.y;
-  // result[5]=valueOfHueNeighbour.z;
+  result[3]=avg2.x;
+  result[4]=avg2.y;
+  result[5]=avg2.z;
 
-  // result[0] = avg1.x;
-  // result[1] = avg1.y;
-  // result[2] = avg1.z;
+  result[6]=valueOfHueNeighbour.x;
+  result[7]=valueOfHueNeighbour.y;
+  result[8]=valueOfHueNeighbour.z;
+
 
   // result[3] = avg2.x;
   // result[4] = avg2.y;
@@ -255,9 +262,10 @@ void main() {
   float mult = .2;
   float[VAL_LN] pVals;
   for(int i=0;i<u_weights.length();i++) {
-    for(float rs=0.;rs<u_reseeds[i];rs++) {
-      rng(10);
-    }
+    seed += int(u_reseeds[i]);
+    // for(float rs=0.;rs<u_reseeds[i];rs++) {
+    //   rng(10);
+    // }
     if(i%6==0) {
       pVals = getPossibleValues();
     }
