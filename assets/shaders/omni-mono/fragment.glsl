@@ -17,6 +17,7 @@ uniform vec2 u_mloc;
 uniform ivec2 u_screen;
 
 const int NUM_WEIGHTS = 16;
+const float prec = 10;
 
 uniform float[NUM_WEIGHTS] u_weights;
 uniform float[NUM_WEIGHTS] u_reseeds;
@@ -83,7 +84,6 @@ int squareDist(int dx, int dy) {
 vec3 avgDistSq(int dist, bool exact) {
   float amt = 0;
   vec3 total = ivec3(0,0,0);
-  float prec = 994096.;
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
       if(!exact && squareDist(x,y)>dist) {
@@ -105,7 +105,7 @@ vec3 avgDistSq(int dist, bool exact) {
 
 vec3 avgDistHex(int dist, bool exact) {
   float amt = 0;
-  vec3 total = vec3(0.);
+  vec3 total = ivec3(0,0,0);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
       if(!exact && hexDist(x,y)>dist) {
@@ -114,11 +114,14 @@ vec3 avgDistHex(int dist, bool exact) {
       if(exact && hexDist(x,y)!=dist) {
         continue;
       }
-      total += getRelative(ivec2(x,y));
+      vec3 raw = getRelative(ivec2(x,y))*prec;
+      total.x += int(raw.x);
+      total.y += int(raw.y);
+      total.z += int(raw.z);
       amt++;
     }
   }
-  return total/amt;
+  return total/(amt*prec);
 }
 
 vec3 avgDistCirc(float dist, bool exact) {
@@ -175,7 +178,7 @@ float sum(float a, float b) {
   }
 }
 
-const int VAL_LN = 9;
+const int VAL_LN = 6;
 
 float[VAL_LN] getPossibleValues() {
 
@@ -184,16 +187,12 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg3 = exactDistCirc (rng(3)) ;
   // vec3 avg4 = avgExactDistSq(3);
 
-  vec3 hsv = rgb2hsv(getRelative(ivec2(0,0)));
-  float dist = hsv.g*rng(5);
-  float angle = hsv.r * 6.28;
-  vec3 valueOfHueNeighbour = getRelative(
-    ivec2(int(sin(angle)*dist),int(cos(angle)*dist))
-  );
-  vec3 avg1 = avgDistSq(10, false);
-  vec3 avg2 = avgDistCirc(4, false); 
+  // vec3 avg0 = avgDistSq(0, true);
+  vec3 avg1 = avgDistSq(0, true);
+  vec3 avg2 = avgDistSq(2, true); 
 
   float[VAL_LN] result;
+
   result[0]=avg1.x;
   result[1]=avg1.y;
   result[2]=avg1.z;
@@ -201,9 +200,15 @@ float[VAL_LN] getPossibleValues() {
   result[4]=avg2.y;
   result[5]=avg2.z;
 
-  result[6]=valueOfHueNeighbour.x;
-  result[7]=valueOfHueNeighbour.y;
-  result[8]=valueOfHueNeighbour.z;
+    // vec3 hsv = rgb2hsv(getRelative(ivec2(0,0)));
+  // float dist = hsv.g*rng(5);
+  // float angle = hsv.r * 6.28;
+  // vec3 valueOfHueNeighbour = getRelative(
+  //   ivec2(int(sin(angle)*dist),int(cos(angle)*dist))
+  // );
+  // result[6]=valueOfHueNeighbour.x;
+  // result[7]=valueOfHueNeighbour.y;
+  // result[8]=valueOfHueNeighbour.z;
 
 
   // result[3] = avg2.x;
@@ -281,7 +286,6 @@ void main() {
         col = mix(col, compute(pVals), ((u_weights[i])+offset)*mult); 
     }
   }
-
 
   if(isClick()) {
     // col = randC(gl_FragCoord.xy);
