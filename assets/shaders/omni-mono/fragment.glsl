@@ -15,7 +15,7 @@ uniform float u_mix;
 uniform float u_mr;
 uniform vec2 u_mloc;
 uniform ivec2 u_screen;
-
+const int NUM_NH = 3;
 const int NUM_WEIGHTS = 16;
 const float prec = 9999;
 
@@ -81,37 +81,25 @@ int squareDist(int dx, int dy) {
   return max(abs(dx),  abs(dy));
 }
 
-vec3 avgDistSq(int dist, bool exact) {
-  float amt = 0;
-  vec3 total = ivec3(0,0,0);
-  for(int y=-dist;y<=dist;y++) {
-    for(int x=-dist;x<=dist;x++) {
-      if(!exact && squareDist(x,y)>dist) {
-        continue;
-      }
-      if(exact && squareDist(x,y)!=dist) {
-        continue;
-      }
-      vec3 raw = getRelative(ivec2(x,y))*prec;
-      total.x += int(raw.x);
-      total.y += int(raw.y);
-      total.z += int(raw.z);
-
-      amt++;
-    }
+int nDist(int nType, int dx, int dy){
+  switch(nType) {
+   case 0: return squareDist(dx,dy);
+   case 1: return int(circDist(dx,dy));
+   case 2: return hexDist(dx,dy);
+   default: return -1;
   }
-  return total/(amt*prec);
 }
 
-vec3 avgDistHex(int dist, bool exact) {
+vec3 avgDist(int nType, int dist, bool exact) {
   float amt = 0;
   vec3 total = ivec3(0,0,0);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
-      if(!exact && hexDist(x,y)>dist) {
+      int aDist = nDist(nType, x, y);
+      if(!exact && aDist>dist) {
         continue;
       }
-      if(exact && hexDist(x,y)!=dist) {
+      if(exact && aDist!=dist) {
         continue;
       }
       vec3 raw = getRelative(ivec2(x,y))*prec;
@@ -124,23 +112,6 @@ vec3 avgDistHex(int dist, bool exact) {
   return total/(amt*prec);
 }
 
-vec3 avgDistCirc(float dist, bool exact) {
-  float amt = 0;
-  vec3 total = vec3(0.);
-  for(float y=-dist;y<=dist;y++) {
-    for(float x=-dist;x<=dist;x++) {
-      if(!exact && circDist(x,y)>dist) {
-        continue;
-      }
-      if(exact && circDist(x,y)!=dist) {
-        continue;
-      }
-      total += getRelative(ivec2(x,y));
-      amt++;
-    }
-  }
-  return total/amt;
-}
 
 
 float rand(vec2 co){
@@ -188,8 +159,8 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg4 = avgExactDistSq(3);
 
   // vec3 avg0 = avgDistSq(0, true);
-  vec3 avg1 = avgDistHex(5, true);
-  vec3 avg2 = avgDistHex(2, false); 
+  vec3 avg1 = avgDist(rng(NUM_NH), rng(11), rng(10)>5);
+  vec3 avg2 = avgDist(rng(NUM_NH), rng(4), rng(10)>5); 
 
   float[VAL_LN] result;
 
@@ -264,24 +235,32 @@ void main() {
   vec3 me = getRelative(ivec2(0,0));
   vec3 col = me;
   float offset = -.5;
-  float mult = .2;
+  float mult = 0.5;
   float[VAL_LN] pVals;
   for(int i=0;i<u_weights.length();i++) {
     seed += int(u_reseeds[i]);
     // for(float rs=0.;rs<u_reseeds[i];rs++) {
     //   rng(10);
     // }
-    if(i%6==0) {
+    if(i%2==0) {
       pVals = getPossibleValues();
     }
+    int numExtras = 0;
     if(u_weights[i]==-1) {
         if(u_showMore>0) {
+          if(numExtras == 1) {
+            continue;
+          }          
+          numExtras ++;
           
           vec2 relPos = gl_FragCoord.xy/u_screen;
           col = mix(col, compute(pVals), (relPos.x+offset)*mult);
           col = mix(col, compute(pVals), (relPos.y+offset)*mult); 
+          break;
+        } else {
+          break;
         }
-        break;
+
     } else {
         col = mix(col, compute(pVals), ((u_weights[i])+offset)*mult); 
     }
