@@ -9,7 +9,7 @@ precision highp float;
 uniform sampler2D u_texture0;
 uniform sampler2D u_texture1;
  
-const int protectionType = 1;
+const int protectionType =1;
 // 0 - fade flashies to checkerboard
 // 1 - blur through time
 
@@ -24,9 +24,7 @@ void main() {
   // float alphaFactor = 0.1-l;
   // float newAlpha = c1.a + alphaFactor * .01;
   //    float newAlpha = c1.a+alphaFactor;
-  if(protectionType == 1) {
-    gl_FragColor = mix(c1, c0, .05);
-  } else {
+  if(protectionType == 0) {
     vec4 diff = abs(c0-c1);
     float l = length(diff.xyz);
     float newAlpha = c1.a;
@@ -37,6 +35,10 @@ void main() {
       // newAlpha = 0.;
     }
     gl_FragColor = vec4(c0.rgb , newAlpha);
+  } else if(protectionType == 1) {
+    gl_FragColor = mix(c1, c0, .05);
+  } else {
+    gl_FragColor = vec4(c0);
   }
 
   // resultCol = c0;

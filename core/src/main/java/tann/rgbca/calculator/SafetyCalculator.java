@@ -1,13 +1,10 @@
 package tann.rgbca.calculator;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import tann.rgbca.Main;
 import tann.rgbca.Utils;
 
 public class SafetyCalculator {
@@ -18,12 +15,14 @@ public class SafetyCalculator {
     ShaderProgram sp;
     long lastModified;
     private Mesh mesh;
+    int scale;
 
     public SafetyCalculator(int size) {
-        this(size, size);
+        this(size, size, 1);
     }
 
-    public SafetyCalculator(int width, int height) {
+    public SafetyCalculator(int width, int height, int scale) {
+        this.scale = scale;
         buffer = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         swap = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         previous = buffer.getColorBufferTexture();

@@ -27,8 +27,9 @@ public class GenericScreen extends Screen {
         this.folderName = folderName;
         this.scale = inScale;
         this.speed = speed;
-        safetyCalculator = new SafetyCalculator(Gdx.graphics.getWidth()/inScale);
-        shaderCalculator = new ShaderCalculator(folderName, Gdx.graphics.getWidth()/inScale, Gdx.graphics.getHeight()/inScale);
+        int w = Gdx.graphics.getWidth()/inScale, h = Gdx.graphics.getHeight()/inScale;
+        shaderCalculator = new ShaderCalculator(folderName, w, h);
+        safetyCalculator = new SafetyCalculator(w, h, scale);
         if(seed != null) {
             shaderCalculator.reseed(seed);
         }
@@ -158,7 +159,13 @@ public class GenericScreen extends Screen {
         batch.flush();
         batch.draw(chk, 0, 0, getWidth(), getHeight());
         batch.flush();
-        batch.draw(drawTexture, 0, 0, getWidth(), getHeight(), 0, 0, (int)getWidth(), (int)getHeight(), false, true);
+        drawTexture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        batch.draw(
+            drawTexture,
+            0, 0, (int)getWidth(), (int)getHeight(),
+            0, 0, drawTexture.getWidth(), drawTexture.getHeight(),
+            false, true
+        );
 
         super.draw(batch, parentAlpha);
     }

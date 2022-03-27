@@ -17,7 +17,7 @@ uniform vec2 u_mloc;
 uniform ivec2 u_screen;
 
 const int NUM_WEIGHTS = 16;
-const float prec = 10;
+const float prec = 9999;
 
 uniform float[NUM_WEIGHTS] u_weights;
 uniform float[NUM_WEIGHTS] u_reseeds;
@@ -188,8 +188,8 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg4 = avgExactDistSq(3);
 
   // vec3 avg0 = avgDistSq(0, true);
-  vec3 avg1 = avgDistSq(0, true);
-  vec3 avg2 = avgDistSq(2, true); 
+  vec3 avg1 = avgDistHex(5, true);
+  vec3 avg2 = avgDistHex(2, false); 
 
   float[VAL_LN] result;
 
