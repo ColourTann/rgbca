@@ -20,6 +20,10 @@ void main() {
   ivec2 v = ivec2(gl_FragCoord.xy);
   vec4 c0 = texelFetch(u_texture0 , v, 0);
   vec4 c1 = texelFetch(u_texture1, v, 0);
+  // if(true) {
+  //   gl_FragColor = vec4(c0);
+  //   return;
+  // }
   
   // float alphaFactor = 0.1-l;
   // float newAlpha = c1.a + alphaFactor * .01;

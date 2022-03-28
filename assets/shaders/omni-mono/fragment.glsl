@@ -28,6 +28,10 @@ uniform int u_middle;
 // a special uniform for textures 
 uniform sampler2D u_texture;
  
+int triangular(int i) {
+  return (i*(i+1))/2;
+}
+
 vec2 onePixel() {
   return (vec2(1.00, 1.00) / u_screen);
 }
@@ -90,16 +94,19 @@ int nDist(int nType, int dx, int dy){
   }
 }
 
-vec3 avgDist(int nType, int dist, bool exact) {
+vec3 avgDist(int nType, int dist, int mask) {
   float amt = 0;
   vec3 total = ivec3(0,0,0);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
       int aDist = nDist(nType, x, y);
-      if(!exact && aDist>dist) {
+      if(aDist>dist) {
         continue;
       }
-      if(exact && aDist!=dist) {
+      int max = max(abs(x),abs(y));
+      int min = min(abs(x),abs(y));
+      int maskIndex = triangular(max)+min;
+      if((mask & (1 << maskIndex)) == 0) {
         continue;
       }
       vec3 raw = getRelative(ivec2(x,y))*prec;
@@ -112,6 +119,11 @@ vec3 avgDist(int nType, int dist, bool exact) {
   return total/(amt*prec);
 }
 
+
+vec3 avgDist(int nType, int dist) {
+  int mask =1073741823; //2^30-1
+  return avgDist(nType, dist, mask);
+}
 
 
 float rand(vec2 co){
@@ -159,8 +171,10 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg4 = avgExactDistSq(3);
 
   // vec3 avg0 = avgDistSq(0, true);
-  vec3 avg1 = avgDist(rng(NUM_NH), rng(11), rng(10)>5);
-  vec3 avg2 = avgDist(rng(NUM_NH), rng(4), rng(10)>5); 
+  vec3 avg1 = avgDist(rng(NUM_NH), rng(7), rng(99999999));
+  vec3 avg2 = avgDist(rng(NUM_NH), rng(3),  rng(99999999)); 
+  // vec3 avg1 = avgDist(1, 1, rng(99999999));
+  // vec3 avg2 = avgDist(1, 1,  rng(99999999)); 
 
   float[VAL_LN] result;
 
@@ -224,7 +238,6 @@ vec3 compute(float[VAL_LN] possibles) {
   );
 }
 
-
 void main() {
 
   float across = 1., down = 1.;
@@ -265,6 +278,26 @@ void main() {
         col = mix(col, compute(pVals), ((u_weights[i])+offset)*mult); 
     }
   }
+
+  // if(true) {
+  //   int dist = 2;
+  //   int size = dist*2+1;
+  //   int row = u_screen.x/size;
+  //   int neighbX = int(gl_FragCoord.x/size) ;
+  //   int neighbY = int(gl_FragCoord.y/size) ;
+  //   int neighb = neighbX + neighbY * (u_screen.x/size);
+
+  //   int x = (int(gl_FragCoord.x)%size)-dist;
+  //   int y = (int(gl_FragCoord.y)%size)-dist;
+  //   int max = max(abs(x),abs(y));
+  //   int min = min(abs(x),abs(y));
+  //   int maskIndex = triangular(max)+min;
+  //   if((neighb & (1 << maskIndex)) > 0) {
+  //     col = vec3(1.,1.,1.);
+  //   } else {
+  //      col = vec3(0.,0.,0.);
+  //   }
+  // }
 
   if(isClick()) {
     // col = randC(gl_FragCoord.xy);
