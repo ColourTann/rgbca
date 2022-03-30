@@ -94,7 +94,7 @@ int nDist(int nType, int dx, int dy){
   }
 }
 
-vec3 avgDist(int nType, int dist, int mask) {
+vec3 avgDist(int nType, int dist) {
   float amt = 0;
   vec3 total = ivec3(0,0,0);
   for(int y=-dist;y<=dist;y++) {
@@ -103,12 +103,12 @@ vec3 avgDist(int nType, int dist, int mask) {
       if(aDist>dist) {
         continue;
       }
-      int max = max(abs(x),abs(y));
-      int min = min(abs(x),abs(y));
-      int maskIndex = triangular(max)+min;
-      if((mask & (1 << maskIndex)) == 0) {
-        continue;
-      }
+      // int max = max(abs(x),abs(y));
+      // int min = min(abs(x),abs(y));
+      // int maskIndex = triangular(max)+min;
+      // if((mask & (1 << maskIndex)) == 0) {
+      //   continue;
+      // }
       vec3 raw = getRelative(ivec2(x,y))*prec;
       total.x += int(raw.x);
       total.y += int(raw.y);
@@ -119,10 +119,60 @@ vec3 avgDist(int nType, int dist, int mask) {
   return total/(amt*prec);
 }
 
+int getHashIndex(int dx, int dy, int dist) {
+  dx += dist;
+  dy += dist;
+  return dy*dist+dx;
+}
 
-vec3 avgDist(int nType, int dist) {
-  int mask =1073741823; //2^30-1
-  return avgDist(nType, dist, mask);
+int getSymmIndex(int dx, int dy) {
+  int max = max(abs(dx),abs(dy));
+  int min = min(abs(dx),abs(dy));
+  return triangular(max)+min;
+}
+
+int getRotIndexBad(int dx, int dy) {
+  int symm = getSymmIndex(dx, dy);
+  symm *= 2;
+  if(abs(dx) != abs(dy)) {
+    int thing = 0;
+    if(sign(dx) == sign(dy)) {
+      thing = 1-thing;  
+    }
+    if(abs(dx)>abs(dy)) {
+      thing = 1-thing;
+    }
+
+    if(thing == 1) {
+      symm++; 
+    }
+  }
+  return symm;
+}
+
+vec3 avgDistMasked(int dist, int mask) {
+  float amt = 0;
+  vec3 total = ivec3(0,0,0);
+  for(int y=-dist;y<=dist;y++) {
+    for(int x=-dist;x<=dist;x++) {
+      int aDist = squareDist(x, y);
+      if(aDist>dist) {
+        continue;
+      }
+      int max = max(abs(x),abs(y));
+      int min = min(abs(x),abs(y));
+      int maskIndex = triangular(max)+min;
+      if((mask & (1 << getHashIndex(x, y, dist))) == 0) {
+        continue;
+      }
+      vec3 raw = getRelative(ivec2(x,y))*prec;
+      total.x += int(raw.x);
+      total.y += int(raw.y);
+      total.z += int(raw.z);
+      amt++;
+    }
+  }
+  return total/(amt*prec);
 }
 
 
@@ -161,7 +211,7 @@ float sum(float a, float b) {
   }
 }
 
-const int VAL_LN = 6;
+const int VAL_LN = 3;
 
 float[VAL_LN] getPossibleValues() {
 
@@ -171,8 +221,8 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg4 = avgExactDistSq(3);
 
   // vec3 avg0 = avgDistSq(0, true);
-  vec3 avg1 = avgDist(rng(NUM_NH), rng(7), rng(99999999));
-  vec3 avg2 = avgDist(rng(NUM_NH), rng(3),  rng(99999999)); 
+  vec3 avg1 = avgDistMasked(1 , rng(99999999));
+  // vec3 avg2 = avg1; 
   // vec3 avg1 = avgDist(1, 1, rng(99999999));
   // vec3 avg2 = avgDist(1, 1,  rng(99999999)); 
 
@@ -181,32 +231,10 @@ float[VAL_LN] getPossibleValues() {
   result[0]=avg1.x;
   result[1]=avg1.y;
   result[2]=avg1.z;
-  result[3]=avg2.x;
-  result[4]=avg2.y;
-  result[5]=avg2.z;
+  // result[3]=avg2.x;
+  // result[4]=avg2.y;
+  // result[5]=avg2.z;
 
-    // vec3 hsv = rgb2hsv(getRelative(ivec2(0,0)));
-  // float dist = hsv.g*rng(5);
-  // float angle = hsv.r * 6.28;
-  // vec3 valueOfHueNeighbour = getRelative(
-  //   ivec2(int(sin(angle)*dist),int(cos(angle)*dist))
-  // );
-  // result[6]=valueOfHueNeighbour.x;
-  // result[7]=valueOfHueNeighbour.y;
-  // result[8]=valueOfHueNeighbour.z;
-
-
-  // result[3] = avg2.x;
-  // result[4] = avg2.y;
-  // result[5] = avg2.z;
-
-  // result[6] = avg3.x;
-  // result[7] = avg3.y;
-  // result[8] = avg3.z;
-
-  // result[9] = avg4.x;
-  // result[10] = avg4.y;
-  // result[11] = avg4.z;
 
   return result;
 }
@@ -216,17 +244,7 @@ float computeSingle(float[VAL_LN] possibles) {
   float val2 = possibles[rng(VAL_LN)];
   float val3 = possibles[rng(VAL_LN)];
   float val4 = possibles[rng(VAL_LN)];
-  // float val5 = possibles[rng(VAL_LN)];
-  // float val6 = possibles[rng(VAL_LN)];
-  // float val7 = possibles[rng(VAL_LN)];
-  // float val8 = possibles[rng(VAL_LN)];
-  // float result1 = sum(sum(val1, val2), sum(val3, val4));
-  // float result2 = sum(sum(val5, val6), sum(val7, val8));
-  // float result = sum(result1, result2);
-  // float result = sum(val1, val2); 
-
   float result = sum(sum(val1, val2), sum(val3, val4));
-
   return mod(abs(result), 1.000001);
 }
 
@@ -248,13 +266,10 @@ void main() {
   vec3 me = getRelative(ivec2(0,0));
   vec3 col = me;
   float offset = -.5;
-  float mult = 0.5;
+  float mult = 0.3;
   float[VAL_LN] pVals;
   for(int i=0;i<u_weights.length();i++) {
     seed += int(u_reseeds[i]);
-    // for(float rs=0.;rs<u_reseeds[i];rs++) {
-    //   rng(10);
-    // }
     if(i%2==0) {
       pVals = getPossibleValues();
     }
@@ -265,10 +280,9 @@ void main() {
             continue;
           }          
           numExtras ++;
-          
           vec2 relPos = gl_FragCoord.xy/u_screen;
           col = mix(col, compute(pVals), (relPos.x+offset)*mult);
-          col = mix(col, compute(pVals), (relPos.y+offset)*mult); 
+          // col = mix(col, compute(pVals), (relPos.y+offset)*mult); 
           break;
         } else {
           break;
@@ -280,19 +294,16 @@ void main() {
   }
 
   // if(true) {
-  //   int dist = 2;
+  //   int dist = 4;
   //   int size = dist*2+1;
   //   int row = u_screen.x/size;
   //   int neighbX = int(gl_FragCoord.x/size) ;
-  //   int neighbY = int(gl_FragCoord.y/size) ;
+  //   int neighbY = int(gl_FragCoord.y/size) +int(u_t*0.);
   //   int neighb = neighbX + neighbY * (u_screen.x/size);
 
   //   int x = (int(gl_FragCoord.x)%size)-dist;
   //   int y = (int(gl_FragCoord.y)%size)-dist;
-  //   int max = max(abs(x),abs(y));
-  //   int min = min(abs(x),abs(y));
-  //   int maskIndex = triangular(max)+min;
-  //   if((neighb & (1 << maskIndex)) > 0) {
+  //   if((neighb & (1 << getRotIndexBad(x, y))) > 0) {
   //     col = vec3(1.,1.,1.);
   //   } else {
   //      col = vec3(0.,0.,0.);

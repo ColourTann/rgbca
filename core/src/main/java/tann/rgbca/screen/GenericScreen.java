@@ -19,6 +19,8 @@ public class GenericScreen extends Screen {
     int scale;
     float speed = 1;
     Texture calcTexture;
+    private int dim = 1;
+
     public GenericScreen(String folderName, int inScale) {
         this(folderName, inScale, null, 1);
     }
@@ -45,8 +47,14 @@ public class GenericScreen extends Screen {
                     shaderCalculator.randomiseState();
                 } else if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
                     if(shaderCalculator.isShowMore()) {
-                        shaderCalculator.addWeight(x/getWidth());
-                        shaderCalculator.addWeight(y/getHeight());
+                        if(dim>=1) {
+                            shaderCalculator.addWeight(x / getWidth());
+                        }
+                        if(dim>=2) {
+                            shaderCalculator.addWeight(y/getHeight());
+                        }
+
+
                         shaderCalculator.randomiseState();
                     }
                 }
@@ -94,8 +102,9 @@ public class GenericScreen extends Screen {
                         shaderCalculator.pasteTexture();
                     } break;
                     case Input.Keys.BACKSPACE: {
-                        shaderCalculator.popWeight();
-                        shaderCalculator.popWeight();
+                        for(int i=0;i<dim;i++) {
+                            shaderCalculator.popWeight();
+                        }
                         break;
                     }
                     case Input.Keys.ENTER: {
