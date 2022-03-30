@@ -18,6 +18,7 @@ uniform ivec2 u_screen;
 const int NUM_NH = 3;
 const int NUM_WEIGHTS = 16;
 const float prec = 9999;
+const int NUM_DIM = 2;
 
 uniform float[NUM_WEIGHTS] u_weights;
 uniform float[NUM_WEIGHTS] u_reseeds;
@@ -221,7 +222,7 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg4 = avgExactDistSq(3);
 
   // vec3 avg0 = avgDistSq(0, true);
-  vec3 avg1 = avgDistMasked(1 , rng(99999999));
+  vec3 avg1 = avgDistMasked(2, rng(99999999));
   // vec3 avg2 = avg1; 
   // vec3 avg1 = avgDist(1, 1, rng(99999999));
   // vec3 avg2 = avgDist(1, 1,  rng(99999999)); 
@@ -266,7 +267,7 @@ void main() {
   vec3 me = getRelative(ivec2(0,0));
   vec3 col = me;
   float offset = -.5;
-  float mult = 0.3;
+  float mult = 0.8;
   float[VAL_LN] pVals;
   for(int i=0;i<u_weights.length();i++) {
     seed += int(u_reseeds[i]);
@@ -281,8 +282,12 @@ void main() {
           }          
           numExtras ++;
           vec2 relPos = gl_FragCoord.xy/u_screen;
-          col = mix(col, compute(pVals), (relPos.x+offset)*mult);
-          // col = mix(col, compute(pVals), (relPos.y+offset)*mult); 
+          if(NUM_DIM>=1) {
+             col = mix(col, compute(pVals), (relPos.x+offset)*mult);
+          }
+          if(NUM_DIM>=2) {
+           col = mix(col, compute(pVals), (relPos.y+offset)*mult); 
+          }
           break;
         } else {
           break;

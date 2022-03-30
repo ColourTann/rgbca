@@ -19,7 +19,7 @@ public class GenericScreen extends Screen {
     int scale;
     float speed = 1;
     Texture calcTexture;
-    private int dim = 1;
+    private static final int dim = 2;
 
     public GenericScreen(String folderName, int inScale) {
         this(folderName, inScale, null, 1);
