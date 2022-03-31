@@ -16,7 +16,7 @@ uniform float u_mr;
 uniform vec2 u_mloc;
 uniform ivec2 u_screen;
 const int NUM_NH = 3;
-const int NUM_WEIGHTS = 16;
+const int NUM_WEIGHTS = 14;
 const float prec = 9999;
 const int NUM_DIM = 2;
 
@@ -163,7 +163,7 @@ vec3 avgDistMasked(int dist, int mask) {
       int max = max(abs(x),abs(y));
       int min = min(abs(x),abs(y));
       int maskIndex = triangular(max)+min;
-      if((mask & (1 << getHashIndex(x, y, dist))) == 0) {
+      if((mask & (1 << getSymmIndex(x, y))) == 0) {
         continue;
       }
       vec3 raw = getRelative(ivec2(x,y))*prec;
@@ -176,6 +176,47 @@ vec3 avgDistMasked(int dist, int mask) {
   return total/(amt*prec);
 }
 
+int il(ivec3 a) {
+  return a.x+a.y+a.z;
+}
+
+bool bigger(ivec3 a, ivec3 b) {
+  int d = il(a) - il(b);
+  ivec3 diff = a-b;
+  if(il(diff)==0) {
+    if(diff.r!=0) return diff.r>0;
+    if(diff.g!=0) return diff.g>0;
+    if(diff.b!=0) return diff.b>0;
+    return true;
+  } else {
+    return d>0;
+  }
+}
+
+vec3 maxDistMasked(int dist, int mask) {
+  float amt = 0;
+  ivec3 maxRaw = ivec3(0,0,0);
+  for(int y=-dist;y<=dist;y++) {
+    for(int x=-dist;x<=dist;x++) {
+      int aDist = squareDist(x, y);
+      if(aDist>dist) {
+        continue;
+      }
+      int max = max(abs(x),abs(y));
+      int min = min(abs(x),abs(y));
+      int maskIndex = triangular(max)+min;
+      if((mask & (1 << getSymmIndex(x, y))) == 0) {
+        continue;
+      }
+      vec3 raw = getRelative(ivec2(x,y))*prec;
+      ivec3 iraw = ivec3(int(raw.x), int(raw.y), int(raw.z));
+      if(bigger(iraw,maxRaw)) {
+        maxRaw = iraw;
+      }
+    }
+  }
+  return maxRaw/prec;
+}
 
 float rand(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -222,7 +263,8 @@ float[VAL_LN] getPossibleValues() {
   // vec3 avg4 = avgExactDistSq(3);
 
   // vec3 avg0 = avgDistSq(0, true);
-  vec3 avg1 = avgDistMasked(2, rng(99999999));
+  // vec3 avg1 = avgDistMasked(rng(8), rng(99999999));
+  vec3 avg1 = maxDistMasked(rng(3), rng(99999999));
   // vec3 avg2 = avg1; 
   // vec3 avg1 = avgDist(1, 1, rng(99999999));
   // vec3 avg2 = avgDist(1, 1,  rng(99999999)); 
@@ -314,6 +356,10 @@ void main() {
   //      col = vec3(0.,0.,0.);
   //   }
   // }
+  
+  //mono 1-bit
+  // float newVal = length(col)>.5 ? 1. : 0.;
+  // col = vec3(newVal, newVal, newVal);
 
   if(isClick()) {
     // col = randC(gl_FragCoord.xy);
