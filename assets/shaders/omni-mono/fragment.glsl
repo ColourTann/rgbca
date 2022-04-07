@@ -17,7 +17,7 @@ uniform vec2 u_mloc;
 uniform ivec2 u_screen;
 const int NUM_NH = 3;
 const int NUM_WEIGHTS = 14;
-const float prec = 9999;
+const float prec = 10000;
 const int NUM_DIM = 2;
 
 uniform float[NUM_WEIGHTS] u_weights;
@@ -104,12 +104,6 @@ vec3 avgDist(int nType, int dist) {
       if(aDist>dist) {
         continue;
       }
-      // int max = max(abs(x),abs(y));
-      // int min = min(abs(x),abs(y));
-      // int maskIndex = triangular(max)+min;
-      // if((mask & (1 << maskIndex)) == 0) {
-      //   continue;
-      // }
       vec3 raw = getRelative(ivec2(x,y))*prec;
       total.x += int(raw.x);
       total.y += int(raw.y);
@@ -120,12 +114,14 @@ vec3 avgDist(int nType, int dist) {
   return total/(amt*prec);
 }
 
-int getHashIndex(int dx, int dy, int dist) {
+// max dist 2
+int getSimpleIndex(int dx, int dy, int dist) {
   dx += dist;
   dy += dist;
-  return dy*dist+dx;
+  return dy*(dist*2+1)+dx;
 }
 
+// max dist 6
 int getSymmIndex(int dx, int dy) {
   int max = max(abs(dx),abs(dy));
   int min = min(abs(dx),abs(dy));
@@ -153,16 +149,9 @@ int getRotIndexBad(int dx, int dy) {
 
 vec3 avgDistMasked(int dist, int mask) {
   float amt = 0;
-  vec3 total = ivec3(0,0,0);
+  ivec3 total = ivec3(0,0,0);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
-      int aDist = squareDist(x, y);
-      if(aDist>dist) {
-        continue;
-      }
-      int max = max(abs(x),abs(y));
-      int min = min(abs(x),abs(y));
-      int maskIndex = triangular(max)+min;
       if((mask & (1 << getSymmIndex(x, y))) == 0) {
         continue;
       }
@@ -264,7 +253,7 @@ float[VAL_LN] getPossibleValues() {
 
   // vec3 avg0 = avgDistSq(0, true);
   // vec3 avg1 = avgDistMasked(rng(8), rng(99999999));
-  vec3 avg1 = maxDistMasked(rng(3), rng(99999999));
+  vec3 avg1 = avgDistMasked(rng(7), rng(99999999));
   // vec3 avg2 = avg1; 
   // vec3 avg1 = avgDist(1, 1, rng(99999999));
   // vec3 avg2 = avgDist(1, 1,  rng(99999999)); 
@@ -307,6 +296,11 @@ void main() {
   + int(gl_FragCoord.y/u_screen.y*down+33)*92183;
 
   vec3 me = getRelative(ivec2(0,0));
+
+  // seed += int(me.x*1);
+  // seed += int(me.y*1);
+  // seed += int(me.z*1);
+
   vec3 col = me;
   float offset = -.5;
   float mult = 0.8;
@@ -341,19 +335,24 @@ void main() {
   }
 
   // if(true) {
-  //   int dist = 4;
+  //   int yAdd = int(u_t*0.);
+  //   yAdd = 295009;
+
+  //   int dist = 6;
   //   int size = dist*2+1;
   //   int row = u_screen.x/size;
   //   int neighbX = int(gl_FragCoord.x/size) ;
-  //   int neighbY = int(gl_FragCoord.y/size) +int(u_t*0.);
+  //   int neighbY = int((gl_FragCoord.y+yAdd)/size) ;
   //   int neighb = neighbX + neighbY * (u_screen.x/size);
 
   //   int x = (int(gl_FragCoord.x)%size)-dist;
-  //   int y = (int(gl_FragCoord.y)%size)-dist;
-  //   if((neighb & (1 << getRotIndexBad(x, y))) > 0) {
-  //     col = vec3(1.,1.,1.);
+  //   int y = (int(gl_FragCoord.y+yAdd)%size)-dist;
+  //   if((neighb & (1 << getSymmIndex(x, y))) > 0) {
+  //     col = vec3(0.,1.,1.);
   //   } else {
   //      col = vec3(0.,0.,0.);
+  //      float f1 = float((neighbX+neighbY)%2);
+  //     // col = mix(col, vec3(f1), .5);
   //   }
   // }
   
@@ -378,6 +377,8 @@ void main() {
       col = vec3(1.,1.,1.);
     }
   }
+
+
   gl_FragColor = vec4(col, 1.);
 
 }
