@@ -22,19 +22,18 @@ public class GenericScreen extends Screen {
     private static final int dim = 2;
 
     public GenericScreen(String folderName, int inScale) {
-        this(folderName, inScale, null, 1);
+        this(new ShaderCalculator(folderName, 1), inScale, 1);
     }
-    public GenericScreen(String folderName, int inScale, Integer seed, float speed) {
+
+    public GenericScreen(ShaderCalculator calculator, int inScale, float speed) {
         super();
         this.folderName = folderName;
         this.scale = inScale;
         this.speed = speed;
         int w = Gdx.graphics.getWidth()/inScale, h = Gdx.graphics.getHeight()/inScale;
-        shaderCalculator = new ShaderCalculator(folderName, w, h);
+        this.shaderCalculator=calculator;
+        calculator.resize(w, h);
         safetyCalculator = new SafetyCalculator(w, h, scale);
-        if(seed != null) {
-            shaderCalculator.reseed(seed);
-        }
         addListener(new ClickListener(){
 
 
@@ -147,7 +146,7 @@ public class GenericScreen extends Screen {
 
     @Override
     public Screen copy() {
-        return new GenericScreen(folderName, scale, shaderCalculator.getSeed(), speed);
+        return new GenericScreen(shaderCalculator, scale, speed);
     }
 
     float ticker;

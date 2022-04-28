@@ -31,6 +31,9 @@ public class Main extends ApplicationAdapter {
 	}
 
 	public void setScreen(Screen screen) {
+		if(current != null) {
+			current.remove();
+		}
 		current = screen;
 		stage.addActor(screen);
 		stage.setKeyboardFocus(screen);

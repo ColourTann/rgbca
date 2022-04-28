@@ -11,7 +11,7 @@ uniform sampler2D u_texture1;
  
 const int protectionType =2;
 // 0 - fade flashies to checkerboard
-// 1 - blur through time
+// 1 - blur through time 
 
 void main() {
 

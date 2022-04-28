@@ -34,17 +34,22 @@ public class ShaderCalculator {
 
     public ShaderCalculator(String folderName, int width, int height) {
         this.folderName = folderName;
-        buffer1 = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
-        buffer2 = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
-        previous = buffer1.getColorBufferTexture();
-        batch = new SpriteBatch();
-        batch.getProjectionMatrix().setToOrtho2D(0,0,width,height);
+        resize(width, height);
         ShaderProgram.pedantic = false;
         reseed();
         compileShader();
 //        mesh = createFullScreenQuad();
 //        mesh = fromLibgdxWiki();
         mesh = createFullScreenQuadFromWIki();
+    }
+
+    public void resize(int width, int height) {
+        buffer1 = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        buffer2 = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        previous = buffer1.getColorBufferTexture();
+        batch = new SpriteBatch();
+        batch.getProjectionMatrix().setToOrtho2D(0,0,width,height);
+        randomiseState();
     }
 
     private Mesh createFullScreenQuad() {
@@ -252,4 +257,5 @@ public class ShaderCalculator {
     public void setMiddle() {
         middle = true;
     }
+
 }
