@@ -20,6 +20,8 @@ const int NUM_WEIGHTS = 14;
 const float prec = 10000;
 const int NUM_DIM = 2;
 
+const int VALS_PER_COL = 2;
+
 uniform float[NUM_WEIGHTS] u_weights;
 uniform float[NUM_WEIGHTS] u_reseeds;
 uniform int u_weightIndex;
@@ -253,7 +255,8 @@ float[VAL_LN] getPossibleValues() {
 
   // vec3 avg0 = avgDistSq(0, true);
   // vec3 avg1 = avgDistMasked(rng(8), rng(99999999));
-  vec3 avg1 = avgDistMasked(rng(7), rng(99999999));
+  // vec3 avg1 = avgDistMasked(rng(3), rng(99999999));
+  vec3 avg1 = avgDist(2, 1);
   // vec3 avg2 = avg1; 
   // vec3 avg1 = avgDist(1, 1, rng(99999999));
   // vec3 avg2 = avgDist(1, 1,  rng(99999999)); 
@@ -303,7 +306,7 @@ void main() {
 
   vec3 col = me;
   float offset = -.5;
-  float mult = 0.8;
+  float mult = 3.5;
   float[VAL_LN] pVals;
   for(int i=0;i<u_weights.length();i++) {
     seed += int(u_reseeds[i]);
@@ -334,35 +337,9 @@ void main() {
     }
   }
 
-  // if(true) {
-  //   int yAdd = int(u_t*0.);
-  //   yAdd = 295009;
-
-  //   int dist = 6;
-  //   int size = dist*2+1;
-  //   int row = u_screen.x/size;
-  //   int neighbX = int(gl_FragCoord.x/size) ;
-  //   int neighbY = int((gl_FragCoord.y+yAdd)/size) ;
-  //   int neighb = neighbX + neighbY * (u_screen.x/size);
-
-  //   int x = (int(gl_FragCoord.x)%size)-dist;
-  //   int y = (int(gl_FragCoord.y+yAdd)%size)-dist;
-  //   if((neighb & (1 << getSymmIndex(x, y))) > 0) {
-  //     col = vec3(0.,1.,1.);
-  //   } else {
-  //      col = vec3(0.,0.,0.);
-  //      float f1 = float((neighbX+neighbY)%2);
-  //     // col = mix(col, vec3(f1), .5);
-  //   }
-  // }
-  
-  //mono 1-bit
-  // float newVal = length(col)>.5 ? 1. : 0.;
-  // col = vec3(newVal, newVal, newVal);
-
   if(isClick()) {
-    // col = randC(gl_FragCoord.xy);
-    col = vec3(.5,.5,.5);
+    col = randC(gl_FragCoord.xy);
+    // col = vec3(.5,.5,.5);
   }
   if(isClear()) {
     col = vec3(0.,0.,0.);
@@ -378,6 +355,11 @@ void main() {
     }
   }
 
+  if(true) { //colorlim
+    col.r = int(col.r*VALS_PER_COL)/float(VALS_PER_COL-1);
+    col.g = int((col.g)*VALS_PER_COL)/float(VALS_PER_COL-1);
+    col.b = int(col.b*VALS_PER_COL)/float(VALS_PER_COL-1);
+  }
 
   gl_FragColor = vec4(col, 1.);
 
