@@ -31,6 +31,8 @@ public class GenericScreen extends Screen {
         this.scale = inScale;
         this.speed = speed;
         int w = Gdx.graphics.getWidth()/inScale, h = Gdx.graphics.getHeight()/inScale;
+        w = Math.max(1, w);
+        h = Math.max(1, h);
         this.shaderCalculator=calculator;
         calculator.resize(w, h);
         safetyCalculator = new SafetyCalculator(w, h, scale);
