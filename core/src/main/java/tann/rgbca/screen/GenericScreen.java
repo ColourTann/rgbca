@@ -155,7 +155,7 @@ public class GenericScreen extends Screen {
 
     @Override
     public void act(float delta) {
-        ticker +=speed;
+        ticker += speed;
         while(ticker>=1) {
             calcTexture = shaderCalculator.nextFrame();
             ticker--;

@@ -15,28 +15,17 @@ uniform float u_mix;
 uniform float u_mr;
 uniform vec2 u_mloc;
 uniform ivec2 u_screen;
-const int NUM_NH = 3;
-const int NUM_WEIGHTS = 14;
-const float prec = 10000;
-const int NUM_DIM = 2;
-const float mult = 2.5;
-const float offset = -.5;
 
-const int VALS_PER_COL = 3000;
+const int NUM_WEIGHTS = 16;
 
 uniform float[NUM_WEIGHTS] u_weights;
 uniform float[NUM_WEIGHTS] u_reseeds;
 uniform int u_weightIndex;
 uniform int u_showMore;
-uniform int u_middle;
  
 // a special uniform for textures 
 uniform sampler2D u_texture;
  
-int triangular(int i) {
-  return (i*(i+1))/2;
-}
-
 vec2 onePixel() {
   return (vec2(1.00, 1.00) / u_screen);
 }
@@ -90,125 +79,74 @@ int squareDist(int dx, int dy) {
   return max(abs(dx),  abs(dy));
 }
 
-int nDist(int nType, int dx, int dy){
-  switch(nType) {
-   case 0: return squareDist(dx,dy);
-   case 1: return int(circDist(dx,dy));
-   case 2: return hexDist(dx,dy);
-   default: return -1;
-  }
-}
 
-vec3 avgDist(int nType, int dist) {
+vec3 avgExactDistHex(int dist) {
   float amt = 0;
-  vec3 total = ivec3(0,0,0);
+  vec3 total = vec3(0.);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
-      int aDist = nDist(nType, x, y);
-      if(aDist>dist) {
+      if(hexDist(x,y)!=dist) {
         continue;
       }
-      vec3 raw = getRelative(ivec2(x,y))*VALS_PER_COL;
-      total.x += int(raw.x);
-      total.y += int(raw.y);
-      total.z += int(raw.z);
+      total += getRelative(ivec2(x,y));
       amt++;
     }
   }
-  return total/(amt*VALS_PER_COL);
+  return total/amt;
 }
 
-// max dist 2
-int getSimpleIndex(int dx, int dy, int dist) {
-  dx += dist;
-  dy += dist;
-  return dy*(dist*2+1)+dx;
-}
-
-// max dist 6
-int getSymmIndex(int dx, int dy) {
-  int max = max(abs(dx),abs(dy));
-  int min = min(abs(dx),abs(dy));
-  return triangular(max)+min;
-}
-
-int getRotIndexBad(int dx, int dy) {
-  int symm = getSymmIndex(dx, dy);
-  symm *= 2;
-  if(abs(dx) != abs(dy)) {
-    int thing = 0;
-    if(sign(dx) == sign(dy)) {
-      thing = 1-thing;  
-    }
-    if(abs(dx)>abs(dy)) {
-      thing = 1-thing;
-    }
-
-    if(thing == 1) {
-      symm++; 
-    }
-  }
-  return symm;
-}
-
-vec3 avgDistMasked(int dist, int mask) {
+vec3 avgExactDistSq(int dist) {
   float amt = 0;
-  ivec3 total = ivec3(0,0,0);
+  vec3 total = vec3(0.);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
-      if((mask & (1 << getSymmIndex(x, y))) == 0) {
+      if(squareDist(x,y)!=dist) {
         continue;
       }
-      vec3 raw = getRelative(ivec2(x,y))*prec;
-      total.x += int(raw.x);
-      total.y += int(raw.y);
-      total.z += int(raw.z);
+      total += getRelative(ivec2(x,y));
       amt++;
     }
   }
-  return total/(amt*prec);
+  return total/amt;
 }
 
-int il(ivec3 a) {
-  return a.x+a.y+a.z;
-}
-
-bool bigger(ivec3 a, ivec3 b) {
-  int d = il(a) - il(b);
-  ivec3 diff = a-b;
-  if(il(diff)==0) {
-    if(diff.r!=0) return diff.r>0;
-    if(diff.g!=0) return diff.g>0;
-    if(diff.b!=0) return diff.b>0;
-    return true;
-  } else {
-    return d>0;
-  }
-}
-
-vec3 maxDistMasked(int dist, int mask) {
+vec3 avgDistHex(int dist) {
   float amt = 0;
-  ivec3 maxRaw = ivec3(0,0,0);
+  vec3 total = vec3(0.);
   for(int y=-dist;y<=dist;y++) {
     for(int x=-dist;x<=dist;x++) {
-      int aDist = squareDist(x, y);
-      if(aDist>dist) {
-        continue;
-      }
-      int max = max(abs(x),abs(y));
-      int min = min(abs(x),abs(y));
-      int maskIndex = triangular(max)+min;
-      if((mask & (1 << getSymmIndex(x, y))) == 0) {
-        continue;
-      }
-      vec3 raw = getRelative(ivec2(x,y))*prec;
-      ivec3 iraw = ivec3(int(raw.x), int(raw.y), int(raw.z));
-      if(bigger(iraw,maxRaw)) {
-        maxRaw = iraw;
-      }
+      if(hexDist(x,y)>dist) { continue;}
+      total += getRelative(ivec2(x,y));
+      amt++;
     }
   }
-  return maxRaw/prec;
+  return total/amt;
+}
+
+vec3 avgDistCirc(float dist) {
+  float amt = 0;
+  vec3 total = vec3(0.);
+  for(float y=-dist;y<=dist;y++) {
+    for(float x=-dist;x<=dist;x++) {
+      if(circDist(x,y)>dist) { continue;}
+      total += getRelative(ivec2(x,y));
+      amt++;
+    }
+  }
+  return total/amt;
+}
+
+vec3 exactDistCirc(float dist) {
+  float amt = 0;
+  vec3 total = vec3(0.);
+  for(float y=-dist;y<=dist;y++) {
+    for(float x=-dist;x<=dist;x++) {
+      if(circDist(x,y)!=dist) { continue;}
+      total += getRelative(ivec2(x,y));
+      amt++;
+    }
+  }
+  return total/amt;
 }
 
 float rand(vec2 co){
@@ -246,33 +184,34 @@ float sum(float a, float b) {
   }
 }
 
-const int VAL_LN = 3;
+const int VAL_LN = 9;
 
 float[VAL_LN] getPossibleValues() {
 
-  // vec3 avg1 = avgDistCirc(rng(5)+1);
-  // vec3 avg2 = avgExactDistSq (rng(2)+1);
-  // vec3 avg3 = exactDistCirc (rng(3)) ;
+  vec3 avg1 = avgDistCirc(rng(5)+1);
+  vec3 avg2 = avgExactDistSq (rng(2)+1);
+  vec3 avg3 = exactDistCirc (rng(3)) ;
   // vec3 avg4 = avgExactDistSq(3);
 
-  // vec3 avg0 = avgDistSq(0, true);
-  // vec3 avg1 = avgDistMasked(rng(8), rng(99999999));
-  // vec3 avg1 = avgDistMasked(rng(3), rng(99999999));
-  // vec3 avg1 = avgDist(2, 1);
-  vec3 avg1 = avgDistMasked(5+rng(5), rng(99999999));
-  // vec3 avg2 = avg1; 
-  // vec3 avg1 = avgDist(1, 1, rng(99999999));
-  // vec3 avg2 = avgDist(1, 1,  rng(99999999)); 
+
 
   float[VAL_LN] result;
 
-  result[0]=avg1.x;
-  result[1]=avg1.y;
-  result[2]=avg1.z;
-  // result[3]=avg2.x;
-  // result[4]=avg2.y;
-  // result[5]=avg2.z;
+  result[0] = avg1.x;
+  result[1] = avg1.y;
+  result[2] = avg1.z;
 
+  result[3] = avg2.x;
+  result[4] = avg2.y;
+  result[5] = avg2.z;
+
+  result[6] = avg3.x;
+  result[7] = avg3.y;
+  result[8] = avg3.z;
+
+  // result[9] = avg4.x;
+  // result[10] = avg4.y;
+  // result[11] = avg4.z;
 
   return result;
 }
@@ -282,7 +221,17 @@ float computeSingle(float[VAL_LN] possibles) {
   float val2 = possibles[rng(VAL_LN)];
   float val3 = possibles[rng(VAL_LN)];
   float val4 = possibles[rng(VAL_LN)];
+  // float val5 = possibles[rng(VAL_LN)];
+  // float val6 = possibles[rng(VAL_LN)];
+  // float val7 = possibles[rng(VAL_LN)];
+  // float val8 = possibles[rng(VAL_LN)];
+  // float result1 = sum(sum(val1, val2), sum(val3, val4));
+  // float result2 = sum(sum(val5, val6), sum(val7, val8));
+  // float result = sum(result1, result2);
+  // float result = sum(val1, val2); 
+
   float result = sum(sum(val1, val2), sum(val3, val4));
+
   return mod(abs(result), 1.000001);
 }
 
@@ -294,6 +243,7 @@ vec3 compute(float[VAL_LN] possibles) {
   );
 }
 
+
 void main() {
 
   float across = 1., down = 1.;
@@ -302,41 +252,30 @@ void main() {
   + int(gl_FragCoord.y/u_screen.y*down+33)*92183;
 
   vec3 me = getRelative(ivec2(0,0));
-
-  // seed += int(me.x*1);
-  // seed += int(me.y*1);
-  // seed += int(me.z*1);
-
   vec3 col = me;
+  float offset = -.5;
+  float mult = .2;
   float[VAL_LN] pVals;
   for(int i=0;i<u_weights.length();i++) {
-    seed += int(u_reseeds[i]);
-    if(i%2==0) {
+    for(float rs=0.;rs<u_reseeds[i];rs++) {
+      rng(10);
+    }
+    if(i%6==0) {
       pVals = getPossibleValues();
     }
-    int numExtras = 0;
     if(u_weights[i]==-1) {
         if(u_showMore>0) {
-          if(numExtras == 1) {
-            continue;
-          }          
-          numExtras ++;
+          
           vec2 relPos = gl_FragCoord.xy/u_screen;
-          if(NUM_DIM>=1) {
-             col = mix(col, compute(pVals), (relPos.x+offset)*mult);
-          }
-          if(NUM_DIM>=2) {
-           col = mix(col, compute(pVals), (relPos.y+offset)*mult); 
-          }
-          break;
-        } else {
-          break;
+          col = mix(col, compute(pVals), (relPos.x+offset)*mult);
+          col = mix(col, compute(pVals), (relPos.y+offset)*mult); 
         }
-
+        break;
     } else {
         col = mix(col, compute(pVals), ((u_weights[i])+offset)*mult); 
     }
   }
+
 
   if(isClick()) {
     // col = randC(gl_FragCoord.xy);
@@ -348,22 +287,6 @@ void main() {
   if(u_randomise>0) {
     col = randC(gl_FragCoord.xy);
   }
-  if(u_middle>0) {
-    vec2 diff = gl_FragCoord.xy - u_screen/2. - vec2(.5,.5); 
-    float cutoff = .6f;
-    if(abs(diff.x) < cutoff && abs(diff.y) < cutoff) {
-      col = vec3(1.,1.,1.);
-    }
-  }
-
-  if(true) { //colorlim
-    col.r = int(col.r*VALS_PER_COL)/float(VALS_PER_COL-1);
-    col.g = int((col.g)*VALS_PER_COL)/float(VALS_PER_COL-1);
-    col.b = int(col.b*VALS_PER_COL)/float(VALS_PER_COL-1);
-    // col.g=col.r;
-    // col.b=col.r;  
-  }
-
   gl_FragColor = vec4(col, 1.);
 
 }

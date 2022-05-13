@@ -21,7 +21,7 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void create() {
 		setupStage();
-		setScreen(new GenericScreen("omni-mono", 1));
+		setScreen(new GenericScreen("omni-cons", 1));
 	}
 
 	private void setupStage() {
